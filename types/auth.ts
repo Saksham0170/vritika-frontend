@@ -5,14 +5,14 @@ export interface LoginPayload {
 }
 
 export interface LoginResponse {
-    data: {
-        token: string
-        userData: {
-            _id: string
-            email: string
-            userType: "Admin" | "SuperAdmin"
-            name: string
-            image?: string
-        }
+    success: boolean
+    token: string
+    userData: {
+        _id: string
+        email: string
+        userType: "Admin" | "Super Admin"
+        name: string
+        image?: string
     }
+    message: string
 }

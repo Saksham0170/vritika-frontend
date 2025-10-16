@@ -1,20 +1,12 @@
 import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
 
-export function middleware(req: NextRequest) {
-    const token = req.cookies.get("token")?.value;
-    const isAuthPage = req.nextUrl.pathname.startsWith("/login");
+export function middleware() {
+    // Since we're using localStorage for token storage (client-side only),
+    // we can't check authentication status in middleware (server-side).
+    // Authentication checks will be handled on the client-side in components.
 
-    // If no token and trying to access protected routes, redirect to login
-    if (!token && !isAuthPage) {
-        return NextResponse.redirect(new URL("/login", req.url));
-    }
-
-    // If has token and trying to access login page, redirect to dashboard
-    if (token && isAuthPage) {
-        return NextResponse.redirect(new URL("/dashboard", req.url));
-    }
-
+    // Just allow all requests to pass through
+    // Client-side components will handle authentication checks
     return NextResponse.next();
 }
 

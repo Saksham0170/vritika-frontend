@@ -3,81 +3,47 @@ import axios from 'axios'
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
 
+interface LoginResponse {
+    data: {
+        token: string
+        userData: Record<string, unknown>
+    }
+}
+
 export async function POST(request: NextRequest) {
     try {
         const { email, password, role } = await request.json()
 
-        // Determine the endpoint based on role
         const endpoint = role === 'superAdmin' ? 'super-admin/login' : 'admin/login'
 
-        // Make the actual login request to your backend
-        const response = await axios.post(
+        const response = await axios.post<LoginResponse>(
             `${BASE_URL}/${endpoint}`,
-            {
-                email,
-                password
-            },
-            {
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            }
+            { email, password },
+            { headers: { 'Content-Type': 'application/json' } }
         )
 
         const { token, userData } = response.data.data
 
         if (!token) {
-            return NextResponse.json(
-                { error: 'Invalid credentials' },
-                { status: 401 }
-            )
+            return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
         }
 
-        // Create the response
-        const nextResponse = NextResponse.json({
+        return NextResponse.json({
             success: true,
+            token,
             userData,
-            message: 'Login successful'
+            message: 'Login successful',
         })
-
-        // Set HTTP-only cookie with the token
-        nextResponse.cookies.set('token', token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
-            maxAge: 60 * 60 * 24 * 7, // 7 days
-            path: '/'
-        })
-
-        // Also set user data in a separate cookie (not HTTP-only so client can access)
-        nextResponse.cookies.set('userData', JSON.stringify(userData), {
-            httpOnly: false,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
-            maxAge: 60 * 60 * 24 * 7, // 7 days
-            path: '/'
-        })
-
-        return nextResponse
-
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Login API error:', error)
 
-        if (error.response) {
-            return NextResponse.json(
-                { error: error.response.data.message || 'Login failed' },
-                { status: error.response.status }
-            )
-        } else if (error.request) {
-            return NextResponse.json(
-                { error: 'No response from server' },
-                { status: 500 }
-            )
-        } else {
-            return NextResponse.json(
-                { error: error.message || 'Login failed' },
-                { status: 500 }
-            )
+        if (axios.isAxiosError(error)) {
+            const message = error.response?.data?.message || 'Login failed'
+            const status = error.response?.status || 500
+            return NextResponse.json({ error: message }, { status })
         }
+
+        const errorMessage = error instanceof Error ? error.message : 'Login failed'
+        return NextResponse.json({ error: errorMessage }, { status: 500 })
     }
 }
