@@ -11,8 +11,7 @@ export async function login(payload: LoginPayload) {
         email: payload.email,
         password: payload.password,
         role: payload.role
-      }),
-      credentials: 'include' // Important: include cookies in the request
+      })
     })
 
     const data = await response.json()
@@ -21,10 +20,10 @@ export async function login(payload: LoginPayload) {
       throw new Error(data.error || 'Login failed')
     }
 
-    console.log('Login API response:', data)
     return data
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Login service error:', error)
-    throw new Error(error.message || 'Login failed')
+    const errorMessage = error instanceof Error ? error.message : 'Login failed'
+    throw new Error(errorMessage)
   }
 }

@@ -1,36 +1,16 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 
-export async function POST(request: NextRequest) {
+export async function POST() {
     try {
-        const response = NextResponse.json({
+        // No server-side logout logic since token is handled client-side
+        return NextResponse.json({
             success: true,
-            message: 'Logged out successfully'
+            message: 'Logged out successfully',
         })
-
-        // Clear the cookies
-        response.cookies.set('token', '', {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
-            maxAge: 0,
-            path: '/'
-        })
-
-        response.cookies.set('userData', '', {
-            httpOnly: false,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
-            maxAge: 0,
-            path: '/'
-        })
-
-        return response
-
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Logout API error:', error)
-        return NextResponse.json(
-            { error: 'Logout failed' },
-            { status: 500 }
-        )
+
+        const errorMessage = error instanceof Error ? error.message : 'Logout failed'
+        return NextResponse.json({ error: errorMessage }, { status: 500 })
     }
 }

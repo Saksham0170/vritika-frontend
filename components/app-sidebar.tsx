@@ -1,0 +1,147 @@
+"use client"
+
+import * as React from "react"
+import {
+  IconDashboard,
+  IconInnerShadowTop,
+  IconUserShield,
+  IconBuildingStore,
+  IconPackage,
+  IconUserCheck,
+  IconCoins,
+} from "@tabler/icons-react"
+
+import { useUserStore } from "@/store/userStore"
+
+import { NavMain } from "@/components/nav-main"
+import { NavUser } from "@/components/nav-user"
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+} from "@/components/ui/sidebar"
+
+// Navigation items for Super Admin
+const superAdminNavMain = [
+  {
+    title: "Dashboard",
+    url: "/dashboard",
+    icon: IconDashboard,
+  },
+  {
+    title: "Admin Management",
+    url: "/admin-management",
+    icon: IconUserShield,
+  },
+]
+
+// Navigation items for Admin
+const adminNavMain = [
+  {
+    title: "Dashboard",
+    url: "/dashboard",
+    icon: IconDashboard,
+  },
+  {
+    title: "Brand Management",
+    url: "/brand-management",
+    icon: IconBuildingStore,
+  },
+  {
+    title: "Product Management",
+    url: "/product-management",
+    icon: IconPackage,
+  },
+  {
+    title: "Salesperson Management",
+    url: "/salesperson-management",
+    icon: IconUserCheck,
+  },
+  {
+    title: "Role Commission",
+    url: "/role-commission",
+    icon: IconCoins,
+  },
+]
+
+
+export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { userData, hasHydrated } = useUserStore()
+
+  // Determine which navigation items to show based on user role
+  const getNavItems = () => {
+    // Don't show any nav items if store hasn't hydrated yet or user data is not loaded
+    if (!hasHydrated || !userData) {
+      return []
+    }
+
+    switch (userData.userType) {
+      case "SuperAdmin":
+        return superAdminNavMain
+      case "Admin":
+        return adminNavMain
+      default:
+        // Fallback for unknown user types
+        console.warn(`Unknown user type: ${userData.userType}`)
+        return adminNavMain
+    }
+  }
+
+  // Show loading state while hydrating
+  if (!hasHydrated) {
+    return (
+      <Sidebar collapsible="offcanvas" {...props}>
+        <SidebarHeader>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton className="data-[slot=sidebar-menu-button]:!p-1.5">
+                <IconInnerShadowTop className="!size-5" />
+                <span className="text-base font-semibold">Vritika</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarHeader>
+        <SidebarContent>
+          <div className="p-4 text-sm text-muted-foreground">Loading...</div>
+        </SidebarContent>
+      </Sidebar>
+    )
+  }
+
+  return (
+    <Sidebar collapsible="offcanvas" className="bg-sidebar border-r border-sidebar-border shadow-sm" {...props}>
+      <SidebarHeader className="border-b border-sidebar-border p-4">
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              asChild
+              className="data-[slot=sidebar-menu-button]:!p-3 hover:bg-sidebar-accent transition-colors"
+            >
+              <a href="#" className="flex items-center gap-3">
+                <IconInnerShadowTop className="!size-6 text-sidebar-primary" />
+                <span className="text-lg font-bold tracking-tight text-sidebar-foreground">Vritika</span>
+              </a>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarHeader>
+      <SidebarContent className="px-3 py-4">
+        <NavMain items={getNavItems()} />
+        {/* <NavDocuments items={data.documents} />
+        <NavSecondary items={data.navSecondary} className="mt-auto" /> */}
+      </SidebarContent>
+      <SidebarFooter className="border-t border-sidebar-border p-3">
+        <NavUser user={{
+          name: userData?.name || "User",
+          email: userData?.email || "",
+          avatar: userData?.image || "/avatars/default.jpg",
+          role: userData?.userType
+        }} />
+      </SidebarFooter>
+    </Sidebar>
+  )
+}
