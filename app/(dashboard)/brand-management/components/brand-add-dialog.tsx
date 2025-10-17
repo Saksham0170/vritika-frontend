@@ -178,117 +178,123 @@ export function BrandAddDialog({ open, onClose, onSuccess }: BrandAddDialogProps
 
     return (
         <Dialog open={open} onOpenChange={handleClose}>
-            <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-                <DialogHeader>
-                    <DialogTitle>Add New Brand</DialogTitle>
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto rounded-2xl border border-border/40 bg-background text-foreground shadow-lg">
+                <DialogHeader className="bg-background/70 backdrop-blur-md border-b border-border/40">
+                    <DialogTitle className="text-xl font-semibold py-0">Add New Brand</DialogTitle>
                 </DialogHeader>
 
-                <div className="grid gap-4 py-4">
-                    {/* Brand Name */}
-                    <div className="grid gap-2">
-                        <Label htmlFor="brandName">
-                            Brand Name <span className="text-red-500">*</span>
-                        </Label>
-                        <Input
-                            id="brandName"
-                            value={formData.brandName}
-                            onChange={(e) => {
-                                handleInputChange("brandName", e.target.value)
-                                if (fieldErrors.brandName) {
-                                    setFieldErrors(prev => ({ ...prev, brandName: "" }))
-                                }
-                            }}
-                            placeholder="Enter brand name"
-                            disabled={saving}
-                            className={fieldErrors.brandName ? "border-red-500 focus:border-red-500" : ""}
-                        />
-                        {fieldErrors.brandName && (
-                            <p className="text-sm text-red-500">{fieldErrors.brandName}</p>
-                        )}
-                    </div>
+                <div className="py-4">
+                    {/* ---------- Brand Information ---------- */}
+                    <section className="rounded-xl border border-border/50 dark:border-border/60 bg-card/30 dark:bg-card/50 p-6 space-y-6 shadow-sm">
+                        <div className="space-y-6">
+                            {/* Basic Fields */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <Label htmlFor="brandName" className="mb-2">
+                                        Brand Name <span className="text-red-500">*</span>
+                                    </Label>
+                                    <Input
+                                        id="brandName"
+                                        value={formData.brandName}
+                                        onChange={(e) => {
+                                            handleInputChange("brandName", e.target.value)
+                                            if (fieldErrors.brandName) {
+                                                setFieldErrors(prev => ({ ...prev, brandName: "" }))
+                                            }
+                                        }}
+                                        placeholder="Enter brand name"
+                                        disabled={saving}
+                                        className={fieldErrors.brandName ? "border-red-500 focus:border-red-500" : ""}
+                                    />
+                                    {fieldErrors.brandName && (
+                                        <p className="text-sm text-red-500 mt-1">{fieldErrors.brandName}</p>
+                                    )}
+                                </div>
 
-                    {/* Brand Details */}
-                    <div className="grid gap-2">
-                        <Label htmlFor="brandDetails">
-                            Brand Details <span className="text-red-500">*</span>
-                        </Label>
-                        <Textarea
-                            id="brandDetails"
-                            value={formData.brandDetails}
-                            onChange={(e) => {
-                                handleInputChange("brandDetails", e.target.value)
-                                if (fieldErrors.brandDetails) {
-                                    setFieldErrors(prev => ({ ...prev, brandDetails: "" }))
-                                }
-                            }}
-                            placeholder="Enter brand details and description"
-                            rows={3}
-                            disabled={saving}
-                            className={fieldErrors.brandDetails ? "border-red-500 focus:border-red-500" : ""}
-                        />
-                        {fieldErrors.brandDetails && (
-                            <p className="text-sm text-red-500">{fieldErrors.brandDetails}</p>
-                        )}
-                    </div>
+                                <div data-field="quality">
+                                    <Label htmlFor="quality" className="mb-2">
+                                        Quality <span className="text-red-500">*</span>
+                                    </Label>
+                                    <Select
+                                        value={formData.quality}
+                                        onValueChange={(value) => {
+                                            handleInputChange("quality", value)
+                                            if (fieldErrors.quality) {
+                                                setFieldErrors(prev => ({ ...prev, quality: "" }))
+                                            }
+                                        }}
+                                        disabled={saving}
+                                    >
+                                        <SelectTrigger className={fieldErrors.quality ? "border-red-500 focus:border-red-500" : ""}>
+                                            <SelectValue placeholder="Select quality level" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {qualityOptions.map((option) => (
+                                                <SelectItem key={option} value={option}>
+                                                    {option}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    {fieldErrors.quality && (
+                                        <p className="text-sm text-red-500 mt-1">{fieldErrors.quality}</p>
+                                    )}
+                                </div>
+                            </div>
 
-                    {/* Quality */}
-                    <div className="grid gap-2" data-field="quality">
-                        <Label htmlFor="quality">
-                            Quality <span className="text-red-500">*</span>
-                        </Label>
-                        <Select
-                            value={formData.quality}
-                            onValueChange={(value) => {
-                                handleInputChange("quality", value)
-                                if (fieldErrors.quality) {
-                                    setFieldErrors(prev => ({ ...prev, quality: "" }))
-                                }
-                            }}
-                            disabled={saving}
-                        >
-                            <SelectTrigger className={fieldErrors.quality ? "border-red-500 focus:border-red-500" : ""}>
-                                <SelectValue placeholder="Select quality level" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {qualityOptions.map((option) => (
-                                    <SelectItem key={option} value={option}>
-                                        {option}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                        {fieldErrors.quality && (
-                            <p className="text-sm text-red-500">{fieldErrors.quality}</p>
-                        )}
-                    </div>
+                            {/* Brand Description */}
+                            <div>
+                                <Label htmlFor="brandDetails" className="mb-2">
+                                    Brand Details <span className="text-red-500">*</span>
+                                </Label>
+                                <Textarea
+                                    id="brandDetails"
+                                    value={formData.brandDetails}
+                                    onChange={(e) => {
+                                        handleInputChange("brandDetails", e.target.value)
+                                        if (fieldErrors.brandDetails) {
+                                            setFieldErrors(prev => ({ ...prev, brandDetails: "" }))
+                                        }
+                                    }}
+                                    placeholder="Enter brand details and description"
+                                    rows={4}
+                                    disabled={saving}
+                                    className={fieldErrors.brandDetails ? "border-red-500 focus:border-red-500" : ""}
+                                />
+                                {fieldErrors.brandDetails && (
+                                    <p className="text-sm text-red-500 mt-1">{fieldErrors.brandDetails}</p>
+                                )}
+                            </div>
 
-                    {/* Product Categories */}
-                    <div className="grid gap-2" data-field="productCategory">
-                        <Label>
-                            Product Categories <span className="text-red-500">*</span>
-                        </Label>
-                        <div className={fieldErrors.productCategory ? "border border-red-500 rounded-md" : ""}>
-                            <MultiSelect
-                                options={categoryOptions}
-                                value={formData.productCategory}
-                                onValueChange={(value) => {
-                                    handleInputChange("productCategory", value)
-                                    if (fieldErrors.productCategory) {
-                                        setFieldErrors(prev => ({ ...prev, productCategory: "" }))
-                                    }
-                                }}
-                                placeholder="Select product categories..."
-                                searchPlaceholder="Search categories..."
-                                disabled={saving}
-                            />
+                            {/* Product Categories */}
+                            <div data-field="productCategory">
+                                <Label className="mb-2">
+                                    Product Categories <span className="text-red-500">*</span>
+                                </Label>
+                                <div className={fieldErrors.productCategory ? "border border-red-500 rounded-md" : ""}>
+                                    <MultiSelect
+                                        options={categoryOptions}
+                                        value={formData.productCategory}
+                                        onValueChange={(value) => {
+                                            handleInputChange("productCategory", value)
+                                            if (fieldErrors.productCategory) {
+                                                setFieldErrors(prev => ({ ...prev, productCategory: "" }))
+                                            }
+                                        }}
+                                        placeholder="Select product categories..."
+                                        searchPlaceholder="Search categories..."
+                                        disabled={saving}
+                                    />
+                                </div>
+                                {fieldErrors.productCategory && (
+                                    <p className="text-sm text-red-500 mt-1">{fieldErrors.productCategory}</p>
+                                )}
+                            </div>
                         </div>
-                        {fieldErrors.productCategory && (
-                            <p className="text-sm text-red-500">{fieldErrors.productCategory}</p>
-                        )}
-                    </div>
+                    </section>
                 </div>
 
-                <DialogFooter className="gap-2 sm:gap-0">
+                <DialogFooter className="flex justify-end gap-3 border-t border-border/40 pt-4">
                     <Button
                         variant="outline"
                         onClick={handleClose}

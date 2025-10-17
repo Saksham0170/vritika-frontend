@@ -1,9 +1,37 @@
-import { Brand, CreateBrandRequest, UpdateBrandRequest } from "@/types/brand"
+import { Brand, CreateBrandRequest, UpdateBrandRequest, PaginatedBrandsResponse, BrandPaginationParams } from "@/types/brand"
 import { getAuthHeaders } from "@/lib/auth"
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
+// Get brands with pagination
+export async function getBrandsPaginated(params?: BrandPaginationParams): Promise<PaginatedBrandsResponse> {
+    try {
+        const searchParams = new URLSearchParams()
+        if (params?.page) {
+            searchParams.append('page', params.page.toString())
+        }
+        if (params?.limit) {
+            searchParams.append('limit', params.limit.toString())
+        }
 
-const API_BASE_URL = 'https://api.vritika.co/api/v1'
+        const url = `${API_BASE_URL}/admin/brand${searchParams.toString() ? `?${searchParams.toString()}` : ''}`
 
-// Get all brands
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: getAuthHeaders(),
+        })
+
+        if (!response.ok) {
+            throw new Error(`Failed to fetch brands: ${response.statusText}`)
+        }
+
+        const data = await response.json()
+        return data
+    } catch (error) {
+        console.error('Error fetching brands:', error)
+        throw error
+    }
+}
+
+// Get all brands (legacy function for backward compatibility)
 export async function getBrands(): Promise<Brand[]> {
     try {
         const response = await fetch(`${API_BASE_URL}/admin/brand`, {

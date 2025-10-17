@@ -1,69 +1,185 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+"use client"
+
+import { useState, useEffect } from "react"
+import { createProductColumns } from "./components/columns"
+import { DataTable } from "@/components/data-table"
+import { deleteProduct, getProductsPaginated } from "@/services/product"
+import { Product } from "@/types/product"
+import { ProductDetailDialog } from "./components/product-detail-dialog"
+import { ProductEditDialog } from "./components/product-edit-dialog"
+import { ProductAddDialog } from "./components/product-add-dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
 
 export default function ProductManagementPage() {
+  const [products, setProducts] = useState<Product[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(null)
+  const [editingProductId, setEditingProductId] = useState<string | null>(null)
+  const [isAddingProduct, setIsAddingProduct] = useState(false)
+  const [deletingProduct, setDeletingProduct] = useState<Product | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
+  const [totalCount, setTotalCount] = useState(0)
+
+  const loadProducts = async (page: number = currentPage, limit: number = pageSize) => {
+    try {
+      setLoading(true)
+      const response = await getProductsPaginated({ page, limit })
+      setProducts(response.data?.data || [])
+      setTotalCount(response.data?.totalData || 0)
+      setError(null)
+    } catch (err: unknown) {
+      console.error("Error loading products:", err)
+      const errorMessage = err instanceof Error ? err.message : "Failed to load products"
+      setError(errorMessage)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadProducts()
+  }, [])
+
+  const handlePageChange = (page: number, newPageSize: number) => {
+    setCurrentPage(page)
+    if (newPageSize !== pageSize) {
+      setPageSize(newPageSize)
+      // Reset to page 1 when page size changes
+      loadProducts(1, newPageSize)
+    } else {
+      loadProducts(page, newPageSize)
+    }
+  }
+
+  const handleAddProduct = () => {
+    setIsAddingProduct(true)
+  }
+
+  const handleRowClick = (product: Product) => {
+    setSelectedProductId(product._id)
+  }
+
+  const handleEdit = (product: Product) => {
+    setEditingProductId(product._id)
+  }
+
+  const handleDelete = (product: Product) => {
+    setDeletingProduct(product)
+  }
+
+  const confirmDelete = async () => {
+    if (!deletingProduct) return
+
+    setIsDeleting(true)
+    try {
+      await deleteProduct(deletingProduct._id)
+      setProducts((prev) => prev.filter((p) => p._id !== deletingProduct._id))
+      setDeletingProduct(null)
+    } catch (error: unknown) {
+      console.error("Error deleting product:", error)
+      // Handle error silently
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
+  const handleEditSuccess = () => {
+    // Reload products after successful edit
+    loadProducts()
+  }
+
+  const handleAddSuccess = () => {
+    // Reload products after successful add
+    loadProducts()
+  }
+
+  const productColumns = createProductColumns({
+    onEdit: handleEdit,
+    onDelete: handleDelete
+  })
+
   return (
-    <div className="flex-1 space-y-4 p-4 pt-6">
-      <div className="flex items-center justify-between space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight">Product Management</h2>
-      </div>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Products</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">456</div>
-            <p className="text-xs text-muted-foreground">
-              +23 from last month
+    <>
+      <DataTable
+        columns={productColumns}
+        data={products}
+        title="Product Management"
+        description="Full control over your products, inventory and pricing"
+        searchKey="productName"
+        searchPlaceholder="Search products..."
+        onAdd={handleAddProduct}
+        addButtonText="Add Product"
+        loading={loading}
+        error={error}
+        onRowClick={handleRowClick}
+        paginationMode="server"
+        totalCount={totalCount}
+        currentPage={currentPage}
+        pageSize={pageSize}
+        onPageChange={handlePageChange}
+      />
+
+      <ProductDetailDialog
+        productId={selectedProductId}
+        open={!!selectedProductId}
+        onClose={() => setSelectedProductId(null)}
+      />
+
+      <ProductEditDialog
+        productId={editingProductId}
+        open={!!editingProductId}
+        onClose={() => setEditingProductId(null)}
+        onSuccess={handleEditSuccess}
+      />
+
+      <ProductAddDialog
+        open={isAddingProduct}
+        onClose={() => setIsAddingProduct(false)}
+        onSuccess={handleAddSuccess}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={!!deletingProduct} onOpenChange={(open) => !open && setDeletingProduct(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Delete</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p>Are you sure you want to delete the product &ldquo;{deletingProduct?.productName}&rdquo;?</p>
+            <p className="text-sm text-muted-foreground mt-2">
+              This action cannot be undone.
             </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Products</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">432</div>
-            <p className="text-xs text-muted-foreground">
-              +18 from last month
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Out of Stock</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">8</div>
-            <p className="text-xs text-muted-foreground">
-              -3 from last week
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Low Stock Alert</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">15</div>
-            <p className="text-xs text-muted-foreground">
-              +5 from yesterday
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-      <Card>
-        <CardHeader>
-          <CardTitle>Product Management</CardTitle>
-          <CardDescription>Manage products, inventory, and pricing</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground">
-            This is the product management page. Here you can manage all products,
-            their inventory levels, pricing, and product information.
-          </p>
-        </CardContent>
-      </Card>
-    </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDeletingProduct(null)}
+              disabled={isDeleting}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={confirmDelete}
+              disabled={isDeleting}
+            >
+              {isDeleting ? "Deleting..." : "Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }

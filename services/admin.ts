@@ -1,7 +1,7 @@
 import { Admin, CreateAdminRequest, UpdateAdminRequest } from '@/types/admin'
 import { getAuthHeaders } from '@/lib/auth'
 
-const API_BASE_URL = 'https://api.vritika.co/api/v1'
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
 
 // Get all admins
 export async function getAdmins(): Promise<Admin[]> {

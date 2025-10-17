@@ -181,125 +181,137 @@ export function BrandEditDialog({ brandId, open, onClose, onSuccess }: BrandEdit
 
     return (
         <Dialog open={open} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-                <DialogHeader>
-                    <DialogTitle>Edit Brand</DialogTitle>
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto rounded-2xl border border-border/40 bg-background text-foreground shadow-lg">
+                <DialogHeader className="bg-background/70 backdrop-blur-md border-b border-border/40">
+                    <DialogTitle className="text-xl font-semibold py-0">Edit Brand</DialogTitle>
                 </DialogHeader>
 
-                {loading && <LoadingSpinner message="Loading brand..." />}
-
-                {error && (
-                    <div className="text-red-600 text-center py-4">{error}</div>
-                )}
-
-                {brand && !loading && !error && (
-                    <div className="grid gap-4 py-4">
-                        {/* Brand Name */}
-                        <div className="grid gap-2">
-                            <Label htmlFor="brandName">
-                                Brand Name <span className="text-red-500">*</span>
-                            </Label>
-                            <Input
-                                id="brandName"
-                                value={formData.brandName}
-                                onChange={(e) => {
-                                    setFormData(prev => ({ ...prev, brandName: e.target.value }))
-                                    if (fieldErrors.brandName) {
-                                        setFieldErrors(prev => ({ ...prev, brandName: "" }))
-                                    }
-                                }}
-                                placeholder="Enter brand name"
-                                disabled={saving}
-                                className={fieldErrors.brandName ? "border-red-500 focus:border-red-500" : ""}
-                            />
-                            {fieldErrors.brandName && (
-                                <p className="text-sm text-red-500">{fieldErrors.brandName}</p>
-                            )}
-                        </div>
-
-                        {/* Brand Details */}
-                        <div className="grid gap-2">
-                            <Label htmlFor="brandDetails">
-                                Brand Details <span className="text-red-500">*</span>
-                            </Label>
-                            <Textarea
-                                id="brandDetails"
-                                value={formData.brandDetails}
-                                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
-                                    setFormData(prev => ({ ...prev, brandDetails: e.target.value }))
-                                    if (fieldErrors.brandDetails) {
-                                        setFieldErrors(prev => ({ ...prev, brandDetails: "" }))
-                                    }
-                                }}
-                                placeholder="Enter brand details and description"
-                                rows={3}
-                                disabled={saving}
-                                className={fieldErrors.brandDetails ? "border-red-500 focus:border-red-500" : ""}
-                            />
-                            {fieldErrors.brandDetails && (
-                                <p className="text-sm text-red-500">{fieldErrors.brandDetails}</p>
-                            )}
-                        </div>
-
-                        {/* Quality */}
-                        <div className="grid gap-2" data-field="quality">
-                            <Label htmlFor="quality">
-                                Quality <span className="text-red-500">*</span>
-                            </Label>
-                            <Select
-                                value={formData.quality}
-                                onValueChange={(value) => {
-                                    setFormData(prev => ({ ...prev, quality: value }))
-                                    if (fieldErrors.quality) {
-                                        setFieldErrors(prev => ({ ...prev, quality: "" }))
-                                    }
-                                }}
-                                disabled={saving}
-                            >
-                                <SelectTrigger className={fieldErrors.quality ? "border-red-500 focus:border-red-500" : ""}>
-                                    <SelectValue placeholder="Select quality level" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {qualityOptions.map((option) => (
-                                        <SelectItem key={option} value={option}>
-                                            {option}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            {fieldErrors.quality && (
-                                <p className="text-sm text-red-500">{fieldErrors.quality}</p>
-                            )}
-                        </div>
-
-                        {/* Product Categories */}
-                        <div className="grid gap-2" data-field="productCategory">
-                            <Label>
-                                Product Categories <span className="text-red-500">*</span>
-                            </Label>
-                            <div className={fieldErrors.productCategory ? "border border-red-500 rounded-md" : ""}>
-                                <MultiSelect
-                                    options={categoryOptions}
-                                    value={formData.productCategory}
-                                    onValueChange={(value) => {
-                                        setFormData(prev => ({ ...prev, productCategory: value }))
-                                        if (fieldErrors.productCategory) {
-                                            setFieldErrors(prev => ({ ...prev, productCategory: "" }))
-                                        }
-                                    }}
-                                    placeholder="Select product categories..."
-                                    searchPlaceholder="Search categories..."
-                                    disabled={saving}
-                                />
-                            </div>
-                            {fieldErrors.productCategory && (
-                                <p className="text-sm text-red-500">{fieldErrors.productCategory}</p>
-                            )}
-                        </div>
+                {loading && (
+                    <div className="flex items-center justify-center py-8">
+                        <LoadingSpinner message="Loading brand..." />
                     </div>
                 )}
 
-                <DialogFooter className="gap-2 sm:gap-0">
+                {error && (
+                    <div className="text-red-600 text-center py-8 bg-red-50 dark:bg-red-950/20 rounded-lg border border-red-200 dark:border-red-800">
+                        {error}
+                    </div>
+                )}
+
+                {brand && !loading && !error && (
+                    <div className="py-4">
+                        {/* ---------- Brand Information ---------- */}
+                        <section className="rounded-xl border border-border/50 dark:border-border/60 bg-card/30 dark:bg-card/50 p-6 space-y-6 shadow-sm">
+                            <div className="space-y-6">
+                                {/* Basic Fields */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <Label htmlFor="brandName" className="mb-2">
+                                            Brand Name <span className="text-red-500">*</span>
+                                        </Label>
+                                        <Input
+                                            id="brandName"
+                                            value={formData.brandName}
+                                            onChange={(e) => {
+                                                setFormData(prev => ({ ...prev, brandName: e.target.value }))
+                                                if (fieldErrors.brandName) {
+                                                    setFieldErrors(prev => ({ ...prev, brandName: "" }))
+                                                }
+                                            }}
+                                            placeholder="Enter brand name"
+                                            disabled={saving}
+                                            className={fieldErrors.brandName ? "border-red-500 focus:border-red-500" : ""}
+                                        />
+                                        {fieldErrors.brandName && (
+                                            <p className="text-sm text-red-500 mt-1">{fieldErrors.brandName}</p>
+                                        )}
+                                    </div>
+
+                                    <div>
+                                        <Label htmlFor="quality" className="mb-2">
+                                            Quality <span className="text-red-500">*</span>
+                                        </Label>
+                                        <Select
+                                            value={formData.quality}
+                                            onValueChange={(value) => {
+                                                setFormData(prev => ({ ...prev, quality: value }))
+                                                if (fieldErrors.quality) {
+                                                    setFieldErrors(prev => ({ ...prev, quality: "" }))
+                                                }
+                                            }}
+                                            disabled={saving}
+                                        >
+                                            <SelectTrigger className={fieldErrors.quality ? "border-red-500 focus:border-red-500" : ""}>
+                                                <SelectValue placeholder="Select quality level" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {qualityOptions.map((option) => (
+                                                    <SelectItem key={option} value={option}>
+                                                        {option}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        {fieldErrors.quality && (
+                                            <p className="text-sm text-red-500 mt-1">{fieldErrors.quality}</p>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Brand Description */}
+                                <div>
+                                    <Label htmlFor="brandDetails" className="mb-2">
+                                        Brand Details <span className="text-red-500">*</span>
+                                    </Label>
+                                    <Textarea
+                                        id="brandDetails"
+                                        value={formData.brandDetails}
+                                        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
+                                            setFormData(prev => ({ ...prev, brandDetails: e.target.value }))
+                                            if (fieldErrors.brandDetails) {
+                                                setFieldErrors(prev => ({ ...prev, brandDetails: "" }))
+                                            }
+                                        }}
+                                        placeholder="Enter brand details and description"
+                                        rows={4}
+                                        disabled={saving}
+                                        className={fieldErrors.brandDetails ? "border-red-500 focus:border-red-500" : ""}
+                                    />
+                                    {fieldErrors.brandDetails && (
+                                        <p className="text-sm text-red-500 mt-1">{fieldErrors.brandDetails}</p>
+                                    )}
+                                </div>
+
+                                {/* Product Categories */}
+                                <div>
+                                    <Label className="mb-2">
+                                        Product Categories <span className="text-red-500">*</span>
+                                    </Label>
+                                    <div className={fieldErrors.productCategory ? "border border-red-500 rounded-md" : ""}>
+                                        <MultiSelect
+                                            options={categoryOptions}
+                                            value={formData.productCategory}
+                                            onValueChange={(value) => {
+                                                setFormData(prev => ({ ...prev, productCategory: value }))
+                                                if (fieldErrors.productCategory) {
+                                                    setFieldErrors(prev => ({ ...prev, productCategory: "" }))
+                                                }
+                                            }}
+                                            placeholder="Select product categories..."
+                                            searchPlaceholder="Search categories..."
+                                            disabled={saving}
+                                        />
+                                    </div>
+                                    {fieldErrors.productCategory && (
+                                        <p className="text-sm text-red-500 mt-1">{fieldErrors.productCategory}</p>
+                                    )}
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                )}
+
+                <DialogFooter className="flex justify-end gap-3 border-t border-border/40 pt-4">
                     <Button
                         variant="outline"
                         onClick={onClose}

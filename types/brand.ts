@@ -21,3 +21,19 @@ export interface UpdateBrandRequest {
     productCategory?: string[]
     quality?: string
 }
+
+export interface PaginatedBrandsResponse {
+    status: boolean
+    data: {
+        page: number
+        limit: number
+        totalData: number
+        data: Brand[]
+    }
+    message: string
+}
+
+export interface BrandPaginationParams {
+    page?: number
+    limit?: number
+}
