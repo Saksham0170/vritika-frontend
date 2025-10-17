@@ -16,7 +16,8 @@ export async function getAdmins(): Promise<Admin[]> {
         }
 
         const data = await response.json()
-        return data.data || data // Handle different response formats
+        const adminArray = data.data?.data
+        return adminArray
     } catch (error) {
         console.error('Error fetching admins:', error)
         throw error

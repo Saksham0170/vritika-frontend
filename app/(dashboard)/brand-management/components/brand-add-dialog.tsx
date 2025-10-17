@@ -2,12 +2,12 @@
 
 import { useState } from "react"
 import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogFooter,
-} from "@/components/ui/dialog"
+    Sheet,
+    SheetContent,
+    SheetHeader,
+    SheetTitle,
+    SheetFooter,
+} from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -177,13 +177,13 @@ export function BrandAddDialog({ open, onClose, onSuccess }: BrandAddDialogProps
     }
 
     return (
-        <Dialog open={open} onOpenChange={handleClose}>
-            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto rounded-2xl border border-border/40 bg-background text-foreground shadow-lg">
-                <DialogHeader className="bg-background/70 backdrop-blur-md border-b border-border/40">
-                    <DialogTitle className="text-xl font-semibold py-0">Add New Brand</DialogTitle>
-                </DialogHeader>
+        <Sheet open={open} onOpenChange={handleClose}>
+            <SheetContent side="right" className="w-[80vw] sm:w-[70vw] lg:w-[50vw] xl:w-[40vw] max-w-2xl overflow-y-auto rounded-2xl border border-border/40 bg-background text-foreground shadow-lg">
+                <SheetHeader className="bg-background/70 backdrop-blur-md border-b border-border/40">
+                    <SheetTitle className="text-xl font-semibold py-0">Add New Brand</SheetTitle>
+                </SheetHeader>
 
-                <div className="py-4">
+                <div className="py-4 px-6">
                     {/* ---------- Brand Information ---------- */}
                     <section className="rounded-xl border border-border/50 dark:border-border/60 bg-card/30 dark:bg-card/50 p-6 space-y-6 shadow-sm">
                         <div className="space-y-6">
@@ -294,7 +294,7 @@ export function BrandAddDialog({ open, onClose, onSuccess }: BrandAddDialogProps
                     </section>
                 </div>
 
-                <DialogFooter className="flex justify-end gap-3 border-t border-border/40 pt-4">
+                <SheetFooter className="flex flex-row justify-end gap-3 border-t border-border/40 pt-4 sm:flex-row">
                     <Button
                         variant="outline"
                         onClick={handleClose}
@@ -308,8 +308,8 @@ export function BrandAddDialog({ open, onClose, onSuccess }: BrandAddDialogProps
                     >
                         {saving ? "Creating..." : "Create Brand"}
                     </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
+                </SheetFooter>
+            </SheetContent>
+        </Sheet>
     )
 }
