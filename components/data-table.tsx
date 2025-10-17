@@ -94,6 +94,12 @@ interface DataTableProps<TData, TValue> {
   loading?: boolean
   error?: string | null
   onRowClick?: (row: TData) => void
+  // Pagination props
+  paginationMode?: 'client' | 'server'
+  totalCount?: number
+  currentPage?: number
+  pageSize?: number
+  onPageChange?: (page: number, pageSize: number) => void
 }
 
 export function DataTable<TData, TValue>({
@@ -108,6 +114,11 @@ export function DataTable<TData, TValue>({
   loading = false,
   error = null,
   onRowClick,
+  paginationMode = 'client',
+  totalCount,
+  currentPage = 1,
+  pageSize = 10,
+  onPageChange,
 }: DataTableProps<TData, TValue>) {
   const [data, setData] = React.useState(() => initialData)
   const [rowSelection, setRowSelection] = React.useState({})
@@ -117,10 +128,18 @@ export function DataTable<TData, TValue>({
     []
   )
   const [sorting, setSorting] = React.useState<SortingState>([])
+
+  // For client-side pagination
   const [pagination, setPagination] = React.useState({
-    pageIndex: 0,
-    pageSize: 10,
+    pageIndex: currentPage - 1,
+    pageSize: pageSize,
   })
+
+  // Server-side pagination state
+  const serverPagination = React.useMemo(() => ({
+    pageIndex: currentPage - 1,
+    pageSize: pageSize,
+  }), [currentPage, pageSize])
 
   const table = useReactTable({
     data,
@@ -130,18 +149,27 @@ export function DataTable<TData, TValue>({
       columnVisibility,
       rowSelection,
       columnFilters,
-      pagination,
+      pagination: paginationMode === 'server' ? serverPagination : pagination,
     },
+    pageCount: paginationMode === 'server' ? Math.ceil((totalCount || 0) / pageSize) : undefined,
+    manualPagination: paginationMode === 'server',
     getRowId: (row: TData) => ((row as { id?: string | number, _id?: string | number }).id || (row as { id?: string | number, _id?: string | number })._id || Math.random()).toString(),
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
-    onPaginationChange: setPagination,
+    onPaginationChange: paginationMode === 'server'
+      ? (updater) => {
+        const newPagination = typeof updater === 'function'
+          ? updater(serverPagination)
+          : updater
+        onPageChange?.(newPagination.pageIndex + 1, newPagination.pageSize)
+      }
+      : setPagination,
     getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
+    getFilteredRowModel: paginationMode === 'client' ? getFilteredRowModel() : undefined,
+    getPaginationRowModel: paginationMode === 'client' ? getPaginationRowModel() : undefined,
     getSortedRowModel: getSortedRowModel(),
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
@@ -303,6 +331,12 @@ export function DataTable<TData, TValue>({
       {/* Pagination */}
       <div className="flex items-center justify-between px-6 py-4 border-t border-border">
         <div className="flex-1 text-sm text-muted-foreground">
+          {paginationMode === 'server' && totalCount !== undefined && (
+            <span>
+              Showing {((currentPage - 1) * pageSize) + 1} to{" "}
+              {Math.min(currentPage * pageSize, totalCount)} of {totalCount} results
+            </span>
+          )}
         </div>
         <div className="flex items-center space-x-6 lg:space-x-8">
           <div className="flex items-center space-x-2">
@@ -327,7 +361,10 @@ export function DataTable<TData, TValue>({
           </div>
           <div className="flex w-[100px] items-center justify-center text-sm font-medium text-muted-foreground">
             Page {table.getState().pagination.pageIndex + 1} of{" "}
-            {table.getPageCount()}
+            {paginationMode === 'server'
+              ? Math.ceil((totalCount || 0) / table.getState().pagination.pageSize)
+              : table.getPageCount()
+            }
           </div>
           <div className="flex items-center space-x-2">
             <Button

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { createBrandColumns } from "./components/columns"
 import { DataTable } from "@/components/data-table"
-import { deleteBrand, getBrands } from "@/services/brand"
+import { deleteBrand, getBrandsPaginated } from "@/services/brand"
 import { Brand } from "@/types/brand"
 import { BrandDetailDialog } from "./components/brand-detail-dialog"
 import { BrandEditDialog } from "./components/brand-edit-dialog"
@@ -28,10 +28,17 @@ export default function BrandManagementPage() {
   const [deletingBrand, setDeletingBrand] = useState<Brand | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
 
-  const loadBrands = async () => {
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
+  const [totalCount, setTotalCount] = useState(0)
+
+  const loadBrands = async (page: number = currentPage, limit: number = pageSize) => {
     try {
-      const brandData = await getBrands()
-      setBrands(brandData || [])
+      setLoading(true)
+      const response = await getBrandsPaginated({ page, limit })
+      setBrands(response.data?.data || [])
+      setTotalCount(response.data?.totalData || 0)
       setError(null)
     } catch (err: unknown) {
       console.error("Error loading brands:", err)
@@ -45,6 +52,17 @@ export default function BrandManagementPage() {
   useEffect(() => {
     loadBrands()
   }, [])
+
+  const handlePageChange = (page: number, newPageSize: number) => {
+    setCurrentPage(page)
+    if (newPageSize !== pageSize) {
+      setPageSize(newPageSize)
+      // Reset to page 1 when page size changes
+      loadBrands(1, newPageSize)
+    } else {
+      loadBrands(page, newPageSize)
+    }
+  }
 
   const handleAddBrand = () => {
     setIsAddingBrand(true)
@@ -107,6 +125,11 @@ export default function BrandManagementPage() {
         loading={loading}
         error={error}
         onRowClick={handleRowClick}
+        paginationMode="server"
+        totalCount={totalCount}
+        currentPage={currentPage}
+        pageSize={pageSize}
+        onPageChange={handlePageChange}
       />
 
       <BrandDetailDialog

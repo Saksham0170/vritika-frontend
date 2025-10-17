@@ -42,8 +42,8 @@ export function AdminDetailDialog({ adminId, open, onClose }: AdminDetailDialogP
 
     return (
         <Dialog open={open} onOpenChange={onClose}>
-            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto rounded-2xl border border-border/40 bg-background text-foreground shadow-lg">
-                <DialogHeader className="bg-background/70 backdrop-blur-md border-b border-border/40">
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto rounded-2xl border border-border/40 bg-zinc-100 dark:bg-background text-foreground shadow-lg">
+                <DialogHeader className="bg-zinc-100/70 dark:bg-background/70 backdrop-blur-md border-b border-border/40">
                     <DialogTitle className="text-xl font-semibold py-0">Admin Details</DialogTitle>
                 </DialogHeader>
 
