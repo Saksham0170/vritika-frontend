@@ -1,7 +1,37 @@
-import { Admin, CreateAdminRequest, UpdateAdminRequest } from '@/types/admin'
+import { Admin, CreateAdminRequest, UpdateAdminRequest, PaginatedAdminsResponse, AdminPaginationParams } from '@/types/admin'
 import { getAuthHeaders } from '@/lib/auth'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
+
+// Get admins with pagination
+export async function getAdminsPaginated(params?: AdminPaginationParams): Promise<PaginatedAdminsResponse> {
+    try {
+        const searchParams = new URLSearchParams()
+        if (params?.page) {
+            searchParams.append('page', params.page.toString())
+        }
+        if (params?.limit) {
+            searchParams.append('limit', params.limit.toString())
+        }
+
+        const url = `${API_BASE_URL}/super-admin/admins${searchParams.toString() ? `?${searchParams.toString()}` : ''}`
+
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: getAuthHeaders(),
+        })
+
+        if (!response.ok) {
+            throw new Error(`Failed to fetch admins: ${response.statusText}`)
+        }
+
+        const data = await response.json()
+        return data
+    } catch (error) {
+        console.error('Error fetching admins:', error)
+        throw error
+    }
+}
 
 // Get all admins
 export async function getAdmins(): Promise<Admin[]> {
