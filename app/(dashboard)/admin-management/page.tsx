@@ -19,7 +19,10 @@ export default function AdminManagementPage() {
 
   const loadAdmins = async () => {
     try {
+      console.log('Loading admins...')
       const adminData = await getAdmins()
+      console.log('Received admin data in component:', adminData)
+      console.log('Admin data type:', typeof adminData, 'Array?', Array.isArray(adminData))
       setAdmins(adminData)
       setError(null)
     } catch (err: unknown) {

@@ -2,12 +2,12 @@
 
 import { useState, useEffect } from "react"
 import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogFooter,
-} from "@/components/ui/dialog"
+    Sheet,
+    SheetContent,
+    SheetHeader,
+    SheetTitle,
+    SheetFooter,
+} from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Label } from "@/components/ui/label"
@@ -41,11 +41,11 @@ export function BrandDetailDialog({ brandId, open, onClose }: BrandDetailDialogP
     }, [brandId, open])
 
     return (
-        <Dialog open={open} onOpenChange={onClose}>
-            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto rounded-2xl border border-border/40 bg-zinc-100 dark:bg-background text-foreground shadow-lg">
-                <DialogHeader className="bg-zinc-100/70 dark:bg-background/70 backdrop-blur-md border-b border-border/40">
-                    <DialogTitle className="text-xl font-semibold py-0">Brand Details</DialogTitle>
-                </DialogHeader>
+        <Sheet open={open} onOpenChange={onClose}>
+            <SheetContent side="right" className="w-[80vw] sm:w-[70vw] lg:w-[50vw] xl:w-[40vw] max-w-2xl overflow-y-auto rounded-2xl border border-border/40 bg-zinc-100 dark:bg-background text-foreground shadow-lg">
+                <SheetHeader className="bg-zinc-100/70 dark:bg-background/70 backdrop-blur-md border-b border-border/40">
+                    <SheetTitle className="text-xl font-semibold py-0">Brand Details</SheetTitle>
+                </SheetHeader>
 
                 {loading && (
                     <div className="flex items-center justify-center py-8">
@@ -60,7 +60,7 @@ export function BrandDetailDialog({ brandId, open, onClose }: BrandDetailDialogP
                 )}
 
                 {brand && !loading && !error && (
-                    <div className="py-4">
+                    <div className="py-4 px-6">
                         {/* ---------- Brand Information ---------- */}
                         <section className="rounded-xl border border-border/50 dark:border-border/60 bg-card/30 dark:bg-card/50 p-6 space-y-6 shadow-sm">
                             <div className="space-y-6">
@@ -133,12 +133,12 @@ export function BrandDetailDialog({ brandId, open, onClose }: BrandDetailDialogP
                     </div>
                 )}
 
-                <DialogFooter className="flex justify-end gap-3 border-t border-border/40 pt-4">
-                    <Button variant="outline" onClick={onClose}>
+                <SheetFooter className="flex flex-row justify-end gap-3 border-t border-border/40 pt-4 sm:flex-row">
+                    <Button variant="outline" size="lg" onClick={onClose}>
                         Close
                     </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
+                </SheetFooter>
+            </SheetContent>
+        </Sheet>
     )
 }

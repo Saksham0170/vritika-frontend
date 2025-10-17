@@ -2,12 +2,12 @@
 
 import { useState, useEffect } from "react"
 import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogFooter,
-} from "@/components/ui/dialog"
+    Sheet,
+    SheetContent,
+    SheetHeader,
+    SheetTitle,
+    SheetFooter,
+} from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 
 import { Label } from "@/components/ui/label"
@@ -41,11 +41,12 @@ export function AdminDetailDialog({ adminId, open, onClose }: AdminDetailDialogP
     }, [adminId, open])
 
     return (
-        <Dialog open={open} onOpenChange={onClose}>
-            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto rounded-2xl border border-border/40 bg-zinc-100 dark:bg-background text-foreground shadow-lg">
-                <DialogHeader className="bg-zinc-100/70 dark:bg-background/70 backdrop-blur-md border-b border-border/40">
-                    <DialogTitle className="text-xl font-semibold py-0">Admin Details</DialogTitle>
-                </DialogHeader>
+        <Sheet open={open} onOpenChange={onClose}>
+            <SheetContent side="right"
+                className="w-[90vw] sm:w-[80vw] lg:w-[60vw] xl:w-[50vw] max-w-4xl overflow-y-auto rounded-2xl border border-border/40 bg-zinc-100 dark:bg-background text-foreground shadow-lg">
+                <SheetHeader className="bg-zinc-100/70 dark:bg-background/70 backdrop-blur-md border-b border-border/40">
+                    <SheetTitle className="text-xl font-semibold py-0">Admin Details</SheetTitle>
+                </SheetHeader>
 
                 {loading && (
                     <div className="flex items-center justify-center py-8">
@@ -60,7 +61,7 @@ export function AdminDetailDialog({ adminId, open, onClose }: AdminDetailDialogP
                 )}
 
                 {admin && !loading && !error && (
-                    <div className="space-y-8 py-4">
+                    <div className="space-y-8 py-4 px-6">
                         {/* ---------- Basic Information ---------- */}
                         <section className="rounded-xl border border-border/50 dark:border-border/60 bg-card/30 dark:bg-card/50 p-6 space-y-6 shadow-sm">
                             <h2 className="text-lg font-medium text-foreground/80 tracking-tight">
@@ -197,12 +198,12 @@ export function AdminDetailDialog({ adminId, open, onClose }: AdminDetailDialogP
                     </div>
                 )}
 
-                <DialogFooter className="flex justify-end gap-3 border-t border-border/40 pt-4">
-                    <Button variant="outline" onClick={onClose}>
+                <SheetFooter className="flex flex-row justify-end gap-3 border-t border-border/40 pt-4 sm:flex-row">
+                    <Button variant="outline" size="lg" onClick={onClose}>
                         Close
                     </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
+                </SheetFooter>
+            </SheetContent>
+        </Sheet>
     )
 }

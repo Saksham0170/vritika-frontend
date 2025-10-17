@@ -2,12 +2,12 @@
 
 import { useState, useEffect } from "react"
 import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogFooter,
-} from "@/components/ui/dialog"
+    Sheet,
+    SheetContent,
+    SheetHeader,
+    SheetTitle,
+    SheetFooter,
+} from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -166,11 +166,11 @@ export function AdminEditDialog({ adminId, open, onClose, onSuccess }: AdminEdit
     }
 
     return (
-        <Dialog open={open} onOpenChange={onClose}>
-            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto rounded-2xl border border-border/40 bg-background text-foreground shadow-lg">
-                <DialogHeader className="bg-background/70 backdrop-blur-md border-b border-border/40">
-                    <DialogTitle className="text-xl font-semibold py-0">Edit Admin</DialogTitle>
-                </DialogHeader>
+        <Sheet open={open} onOpenChange={onClose}>
+            <SheetContent side="right" className="w-[90vw] sm:w-[80vw] lg:w-[60vw] xl:w-[50vw] max-w-4xl overflow-y-auto rounded-2xl border border-border/40 bg-background text-foreground shadow-lg">
+                <SheetHeader className="bg-background/70 backdrop-blur-md border-b border-border/40">
+                    <SheetTitle className="text-xl font-semibold py-0">Edit Admin</SheetTitle>
+                </SheetHeader>
 
                 {loading && <LoadingSpinner message="Loading admin..." />}
 
@@ -179,7 +179,7 @@ export function AdminEditDialog({ adminId, open, onClose, onSuccess }: AdminEdit
                 )}
 
                 {admin && !loading && !error && (
-                    <div className="space-y-8 py-4">
+                    <div className="space-y-8 py-4 px-6">
                         {/* ---------- Basic Information ---------- */}
                         <section className="rounded-xl border border-border/50 dark:border-border/60 bg-card/30 dark:bg-card/50 p-6 space-y-6 shadow-sm">
                             <h2 className="text-lg font-medium text-foreground/80 tracking-tight">
@@ -369,15 +369,15 @@ export function AdminEditDialog({ adminId, open, onClose, onSuccess }: AdminEdit
                     </div>
                 )}
 
-                <DialogFooter className="flex justify-end gap-3 border-t border-border/40 pt-4">
+                <SheetFooter className="flex flex-row justify-end gap-3 border-t border-border/40 pt-4 sm:flex-row">
                     <Button variant="outline" onClick={onClose}>
                         Cancel
                     </Button>
                     <Button onClick={handleSave} disabled={saving || loading}>
                         {saving ? "Saving..." : "Save Changes"}
                     </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
+                </SheetFooter>
+            </SheetContent>
+        </Sheet>
     )
 }
