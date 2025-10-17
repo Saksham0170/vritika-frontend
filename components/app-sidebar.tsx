@@ -47,6 +47,11 @@ const adminNavMain = [
     icon: IconDashboard,
   },
   {
+    title: "Sub Admin Management",
+    url: "/sub-admin-management",
+    icon: IconUserShield,
+  },
+  {
     title: "Brand Management",
     url: "/brand-management",
     icon: IconBuildingStore,

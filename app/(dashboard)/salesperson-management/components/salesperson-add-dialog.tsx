@@ -1,0 +1,512 @@
+"use client"
+
+import { useState } from "react"
+import {
+    Sheet,
+    SheetContent,
+    SheetHeader,
+    SheetTitle,
+    SheetFooter,
+} from "@/components/ui/sheet"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
+import { createSalesperson } from "@/services/salesperson"
+import { CreateSalespersonRequest } from "@/types/salesperson"
+
+
+interface SalespersonAddDialogProps {
+    open: boolean
+    onClose: () => void
+    onSuccess?: () => void
+}
+
+export function SalespersonAddDialog({ open, onClose, onSuccess }: SalespersonAddDialogProps) {
+    const [saving, setSaving] = useState(false)
+
+    const [formData, setFormData] = useState({
+        name: "",
+        phoneNumber: "",
+        email: "",
+        address: "",
+        selfie: "",
+        aadharCardNumber: "",
+        aadharCardFront: "",
+        aadharCardBack: "",
+        panCardNumber: "",
+        panCardFront: "",
+        bankAccountNumber: "",
+        bankIfscCode: "",
+        bankAccountName: "",
+        cancelChequePhoto: "",
+        status: "Active" as "Active" | "Inactive",
+    })
+
+    const [fieldErrors, setFieldErrors] = useState({
+        name: "",
+        phoneNumber: "",
+        email: "",
+        address: "",
+        aadharCardNumber: "",
+        panCardNumber: "",
+        bankAccountNumber: "",
+        bankIfscCode: "",
+        bankAccountName: ""
+    })
+
+    const resetForm = () => {
+        setFormData({
+            name: "",
+            phoneNumber: "",
+            email: "",
+            address: "",
+            selfie: "",
+            aadharCardNumber: "",
+            aadharCardFront: "",
+            aadharCardBack: "",
+            panCardNumber: "",
+            panCardFront: "",
+            bankAccountNumber: "",
+            bankIfscCode: "",
+            bankAccountName: "",
+            cancelChequePhoto: "",
+            status: "Active",
+        })
+        setFieldErrors({
+            name: "",
+            phoneNumber: "",
+            email: "",
+            address: "",
+            aadharCardNumber: "",
+            panCardNumber: "",
+            bankAccountNumber: "",
+            bankIfscCode: "",
+            bankAccountName: ""
+        })
+    }
+
+    const validateForm = () => {
+        const errors = {
+            name: "",
+            phoneNumber: "",
+            email: "",
+            address: "",
+            aadharCardNumber: "",
+            panCardNumber: "",
+            bankAccountNumber: "",
+            bankIfscCode: "",
+            bankAccountName: ""
+        }
+
+        if (!formData.name.trim()) {
+            errors.name = "Name is required"
+        }
+
+        if (!formData.phoneNumber.trim()) {
+            errors.phoneNumber = "Phone number is required"
+        }
+
+        // Optional email validation - only validate format if email is provided
+        if (formData.email.trim() && !/\S+@\S+\.\S+/.test(formData.email)) {
+            errors.email = "Please enter a valid email address"
+        }
+
+        // All other fields are optional - no validation needed
+
+        setFieldErrors(errors)
+
+        // Focus on first field with error
+        const hasErrors = Object.values(errors).some(error => error !== "")
+        if (hasErrors) {
+            setTimeout(() => {
+                if (errors.name) {
+                    document.getElementById("name")?.focus()
+                } else if (errors.phoneNumber) {
+                    document.getElementById("phoneNumber")?.focus()
+                } else if (errors.email) {
+                    document.getElementById("email")?.focus()
+                }
+            }, 100)
+        }
+
+        return !hasErrors
+    }
+
+    const handleSave = async () => {
+        if (!validateForm()) {
+            return
+        }
+
+        setSaving(true)
+        try {
+            const createData: CreateSalespersonRequest = {
+                name: formData.name,
+                phoneNumber: formData.phoneNumber,
+                status: formData.status,
+            }
+
+            // Only add optional fields if they have values
+            if (formData.email && formData.email.trim()) {
+                createData.email = formData.email.trim()
+            }
+            if (formData.address && formData.address.trim()) {
+                createData.address = formData.address.trim()
+            }
+            if (formData.aadharCardNumber && formData.aadharCardNumber.trim()) {
+                createData.aadharCardNumber = formData.aadharCardNumber.trim()
+            }
+            if (formData.panCardNumber && formData.panCardNumber.trim()) {
+                createData.panCardNumber = formData.panCardNumber.trim()
+            }
+            if (formData.bankAccountNumber && formData.bankAccountNumber.trim()) {
+                createData.bankAccountNumber = formData.bankAccountNumber.trim()
+            }
+            if (formData.bankIfscCode && formData.bankIfscCode.trim()) {
+                createData.bankIfscCode = formData.bankIfscCode.trim()
+            }
+            if (formData.bankAccountName && formData.bankAccountName.trim()) {
+                createData.bankAccountName = formData.bankAccountName.trim()
+            }
+            if (formData.selfie && formData.selfie.trim()) {
+                createData.selfie = formData.selfie.trim()
+            }
+            if (formData.aadharCardFront && formData.aadharCardFront.trim()) {
+                createData.aadharCardFront = formData.aadharCardFront.trim()
+            }
+            if (formData.aadharCardBack && formData.aadharCardBack.trim()) {
+                createData.aadharCardBack = formData.aadharCardBack.trim()
+            }
+            if (formData.panCardFront && formData.panCardFront.trim()) {
+                createData.panCardFront = formData.panCardFront.trim()
+            }
+            if (formData.cancelChequePhoto && formData.cancelChequePhoto.trim()) {
+                createData.cancelChequePhoto = formData.cancelChequePhoto.trim()
+            }
+
+            console.log('Submitting salesperson data from UI:', createData)
+
+            await createSalesperson(createData)
+            resetForm()
+            onSuccess?.()
+            onClose()
+        } catch (error) {
+            console.error('Error creating salesperson:', error)
+            alert(`Error creating salesperson: ${error instanceof Error ? error.message : 'Unknown error'}`)
+        } finally {
+            setSaving(false)
+        }
+    }
+
+    const handleClose = () => {
+        resetForm()
+        onClose()
+    }
+
+    return (
+        <Sheet open={open} onOpenChange={handleClose}>
+            <SheetContent side="right" className="w-[90vw] sm:w-[80vw] lg:w-[60vw] xl:w-[50vw] max-w-4xl overflow-y-auto rounded-2xl border border-border/40 bg-background text-foreground shadow-lg">
+                <SheetHeader className="bg-background/70 backdrop-blur-md border-b border-border/40">
+                    <SheetTitle className="text-xl font-semibold py-0 ">Add New Salesperson</SheetTitle>
+                </SheetHeader>
+
+                <div className="space-y-8 py-4 px-6">
+                    {/* ---------- Basic Information ---------- */}
+                    <section className="rounded-xl border border-border/50 dark:border-border/60 bg-card/30 dark:bg-card/50 p-6 space-y-6 shadow-sm">
+                        <h2 className="text-lg font-medium text-foreground/80 tracking-tight">
+                            Basic Information
+                        </h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <Label htmlFor="name" className="mb-2">Name *</Label>
+                                <Input
+                                    id="name"
+                                    value={formData.name}
+                                    onChange={(e) => {
+                                        setFormData((p) => ({ ...p, name: e.target.value }))
+                                        if (fieldErrors.name) {
+                                            setFieldErrors(prev => ({ ...prev, name: "" }))
+                                        }
+                                    }}
+                                    placeholder="Enter salesperson name"
+                                    disabled={saving}
+                                    className={fieldErrors.name ? "border-red-500 focus:border-red-500" : ""}
+                                />
+                                {fieldErrors.name && (
+                                    <p className="text-sm text-red-500 mt-1">{fieldErrors.name}</p>
+                                )}
+                            </div>
+
+                            <div>
+                                <Label htmlFor="phoneNumber" className="mb-2">Phone Number *</Label>
+                                <Input
+                                    id="phoneNumber"
+                                    value={formData.phoneNumber}
+                                    onChange={(e) => {
+                                        setFormData((p) => ({ ...p, phoneNumber: e.target.value }))
+                                        if (fieldErrors.phoneNumber) {
+                                            setFieldErrors(prev => ({ ...prev, phoneNumber: "" }))
+                                        }
+                                    }}
+                                    placeholder="Enter phone number"
+                                    disabled={saving}
+                                    className={fieldErrors.phoneNumber ? "border-red-500 focus:border-red-500" : ""}
+                                />
+                                {fieldErrors.phoneNumber && (
+                                    <p className="text-sm text-red-500 mt-1">{fieldErrors.phoneNumber}</p>
+                                )}
+                            </div>
+
+                            <div>
+                                <Label htmlFor="email" className="mb-2">Email</Label>
+                                <Input
+                                    id="email"
+                                    type="email"
+                                    value={formData.email}
+                                    onChange={(e) => {
+                                        setFormData((p) => ({ ...p, email: e.target.value }))
+                                        if (fieldErrors.email) {
+                                            setFieldErrors(prev => ({ ...prev, email: "" }))
+                                        }
+                                    }}
+                                    placeholder="Enter email address"
+                                    disabled={saving}
+                                    className={fieldErrors.email ? "border-red-500 focus:border-red-500" : ""}
+                                />
+                                {fieldErrors.email && (
+                                    <p className="text-sm text-red-500 mt-1">{fieldErrors.email}</p>
+                                )}
+                            </div>
+
+                            <div>
+                                <Label htmlFor="status" className="mb-2">Status *</Label>
+                                <Select
+                                    value={formData.status}
+                                    onValueChange={(value: "Active" | "Inactive") =>
+                                        setFormData((p) => ({ ...p, status: value }))
+                                    }
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select status" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="Active">Active</SelectItem>
+                                        <SelectItem value="Inactive">Inactive</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div className="md:col-span-2">
+                                <Label htmlFor="address" className="mb-2">Address</Label>
+                                <Textarea
+                                    id="address"
+                                    rows={3}
+                                    value={formData.address}
+                                    onChange={(e) => {
+                                        setFormData((p) => ({ ...p, address: e.target.value }))
+                                        if (fieldErrors.address) {
+                                            setFieldErrors(prev => ({ ...prev, address: "" }))
+                                        }
+                                    }}
+                                    placeholder="Enter complete address"
+                                    disabled={saving}
+                                    className={fieldErrors.address ? "border-red-500 focus:border-red-500" : ""}
+                                />
+                                {fieldErrors.address && (
+                                    <p className="text-sm text-red-500 mt-1">{fieldErrors.address}</p>
+                                )}
+                            </div>
+
+                            <div>
+                                <Label htmlFor="selfie" className="mb-2">Selfie (URL)</Label>
+                                <Input
+                                    id="selfie"
+                                    value={formData.selfie}
+                                    onChange={(e) => setFormData((p) => ({ ...p, selfie: e.target.value }))}
+                                    placeholder="Enter selfie image URL"
+                                    disabled={saving}
+                                />
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* ---------- Identity Information ---------- */}
+                    <section className="rounded-xl border border-border/50 dark:border-border/60 bg-card/30 dark:bg-card/50 p-6 space-y-6 shadow-sm">
+                        <h2 className="text-lg font-medium text-foreground/80 tracking-tight">
+                            Identity Information
+                        </h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <Label htmlFor="aadharCardNumber" className="mb-2">Aadhaar Card Number</Label>
+                                <Input
+                                    id="aadharCardNumber"
+                                    value={formData.aadharCardNumber}
+                                    onChange={(e) => {
+                                        setFormData((p) => ({ ...p, aadharCardNumber: e.target.value }))
+                                        if (fieldErrors.aadharCardNumber) {
+                                            setFieldErrors(prev => ({ ...prev, aadharCardNumber: "" }))
+                                        }
+                                    }}
+                                    placeholder="Enter Aadhaar card number"
+                                    disabled={saving}
+                                    className={fieldErrors.aadharCardNumber ? "border-red-500 focus:border-red-500" : ""}
+                                />
+                                {fieldErrors.aadharCardNumber && (
+                                    <p className="text-sm text-red-500 mt-1">{fieldErrors.aadharCardNumber}</p>
+                                )}
+                            </div>
+
+                            <div>
+                                <Label htmlFor="panCardNumber" className="mb-2">PAN Card Number</Label>
+                                <Input
+                                    id="panCardNumber"
+                                    value={formData.panCardNumber}
+                                    onChange={(e) => {
+                                        setFormData((p) => ({ ...p, panCardNumber: e.target.value }))
+                                        if (fieldErrors.panCardNumber) {
+                                            setFieldErrors(prev => ({ ...prev, panCardNumber: "" }))
+                                        }
+                                    }}
+                                    placeholder="Enter PAN card number"
+                                    disabled={saving}
+                                    className={fieldErrors.panCardNumber ? "border-red-500 focus:border-red-500" : ""}
+                                />
+                                {fieldErrors.panCardNumber && (
+                                    <p className="text-sm text-red-500 mt-1">{fieldErrors.panCardNumber}</p>
+                                )}
+                            </div>
+
+                            <div>
+                                <Label htmlFor="aadharCardFront" className="mb-2">Aadhaar Card Front (URL)</Label>
+                                <Input
+                                    id="aadharCardFront"
+                                    value={formData.aadharCardFront}
+                                    onChange={(e) => setFormData((p) => ({ ...p, aadharCardFront: e.target.value }))}
+                                    placeholder="Enter Aadhaar card front image URL"
+                                    disabled={saving}
+                                />
+                            </div>
+
+                            <div>
+                                <Label htmlFor="aadharCardBack" className="mb-2">Aadhaar Card Back (URL)</Label>
+                                <Input
+                                    id="aadharCardBack"
+                                    value={formData.aadharCardBack}
+                                    onChange={(e) => setFormData((p) => ({ ...p, aadharCardBack: e.target.value }))}
+                                    placeholder="Enter Aadhaar card back image URL"
+                                    disabled={saving}
+                                />
+                            </div>
+
+                            <div>
+                                <Label htmlFor="panCardFront" className="mb-2">PAN Card Front (URL)</Label>
+                                <Input
+                                    id="panCardFront"
+                                    value={formData.panCardFront}
+                                    onChange={(e) => setFormData((p) => ({ ...p, panCardFront: e.target.value }))}
+                                    placeholder="Enter PAN card front image URL"
+                                    disabled={saving}
+                                />
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* ---------- Banking Information ---------- */}
+                    <section className="rounded-xl border border-border/50 dark:border-border/60 bg-card/30 dark:bg-card/50 p-6 space-y-6 shadow-sm">
+                        <h2 className="text-lg font-medium text-foreground/80 tracking-tight">
+                            Banking Information
+                        </h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <Label htmlFor="bankAccountName" className="mb-2">Account Holder Name</Label>
+                                <Input
+                                    id="bankAccountName"
+                                    value={formData.bankAccountName}
+                                    onChange={(e) => {
+                                        setFormData((p) => ({ ...p, bankAccountName: e.target.value }))
+                                        if (fieldErrors.bankAccountName) {
+                                            setFieldErrors(prev => ({ ...prev, bankAccountName: "" }))
+                                        }
+                                    }}
+                                    placeholder="Enter account holder name"
+                                    disabled={saving}
+                                    className={fieldErrors.bankAccountName ? "border-red-500 focus:border-red-500" : ""}
+                                />
+                                {fieldErrors.bankAccountName && (
+                                    <p className="text-sm text-red-500 mt-1">{fieldErrors.bankAccountName}</p>
+                                )}
+                            </div>
+
+                            <div>
+                                <Label htmlFor="bankAccountNumber" className="mb-2">Account Number</Label>
+                                <Input
+                                    id="bankAccountNumber"
+                                    value={formData.bankAccountNumber}
+                                    onChange={(e) => {
+                                        setFormData((p) => ({ ...p, bankAccountNumber: e.target.value }))
+                                        if (fieldErrors.bankAccountNumber) {
+                                            setFieldErrors(prev => ({ ...prev, bankAccountNumber: "" }))
+                                        }
+                                    }}
+                                    placeholder="Enter account number"
+                                    disabled={saving}
+                                    className={fieldErrors.bankAccountNumber ? "border-red-500 focus:border-red-500" : ""}
+                                />
+                                {fieldErrors.bankAccountNumber && (
+                                    <p className="text-sm text-red-500 mt-1">{fieldErrors.bankAccountNumber}</p>
+                                )}
+                            </div>
+
+                            <div>
+                                <Label htmlFor="bankIfscCode" className="mb-2">IFSC Code</Label>
+                                <Input
+                                    id="bankIfscCode"
+                                    value={formData.bankIfscCode}
+                                    onChange={(e) => {
+                                        setFormData((p) => ({ ...p, bankIfscCode: e.target.value }))
+                                        if (fieldErrors.bankIfscCode) {
+                                            setFieldErrors(prev => ({ ...prev, bankIfscCode: "" }))
+                                        }
+                                    }}
+                                    placeholder="Enter IFSC code"
+                                    disabled={saving}
+                                    className={fieldErrors.bankIfscCode ? "border-red-500 focus:border-red-500" : ""}
+                                />
+                                {fieldErrors.bankIfscCode && (
+                                    <p className="text-sm text-red-500 mt-1">{fieldErrors.bankIfscCode}</p>
+                                )}
+                            </div>
+
+                            <div>
+                                <Label htmlFor="cancelChequePhoto" className="mb-2">Cancel Cheque Photo (URL)</Label>
+                                <Input
+                                    id="cancelChequePhoto"
+                                    value={formData.cancelChequePhoto}
+                                    onChange={(e) => setFormData((p) => ({ ...p, cancelChequePhoto: e.target.value }))}
+                                    placeholder="Enter cancel cheque photo URL"
+                                    disabled={saving}
+                                />
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <SheetFooter className="flex flex-row justify-end gap-3 border-t border-border/40 pt-4 sm:flex-row">
+                    <Button variant="outline" onClick={handleClose}>
+                        Cancel
+                    </Button>
+                    <Button onClick={handleSave} disabled={saving}>
+                        {saving ? "Creating..." : "Create Salesperson"}
+                    </Button>
+                </SheetFooter>
+            </SheetContent>
+        </Sheet>
+    )
+}
