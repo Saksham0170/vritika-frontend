@@ -1,18 +1,17 @@
 "use client"
 
 import { ColumnDef } from "@tanstack/react-table"
+import { IconDotsVertical, IconEdit, IconTrash } from "@tabler/icons-react"
+
+import { Product } from "@/types/product"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { MoreHorizontal, Edit, Trash2, Eye } from "lucide-react"
-import { Product } from "@/types/product"
 
 interface ProductColumnsProps {
     onEdit: (product: Product) => void
@@ -31,40 +30,24 @@ export const createProductColumns = ({ onEdit, onDelete }: ProductColumnsProps):
         },
     },
     {
-        accessorKey: "type",
-        header: "Type",
-        cell: ({ row }) => {
-            const type = row.getValue("type") as string
-            const getTypeVariant = (type: string) => {
-                switch (type) {
-                    case "Solar Module":
-                        return "default"
-                    case "Inverter":
-                        return "secondary"
-                    case "Kit":
-                        return "outline"
-                    case "BOS":
-                        return "outline"
-                    case "Structure":
-                        return "outline"
-                    default:
-                        return "outline"
-                }
-            }
-            return (
-                <Badge variant={getTypeVariant(type)}>
-                    {type}
-                </Badge>
-            )
-        },
-    },
-    {
         accessorKey: "price",
         header: "Price",
         cell: ({ row }) => {
             const price = row.getValue("price") as number
             return (
                 <div className="font-medium">₹{price.toLocaleString()}</div>
+            )
+        },
+    },
+    {
+        accessorKey: "spvBrand",
+        header: "Brand",
+        cell: ({ row }) => {
+            const brand = row.getValue("spvBrand") as string
+            return (
+                <div className="font-medium">
+                    {brand || <span className="text-muted-foreground">-</span>}
+                </div>
             )
         },
     },
@@ -79,28 +62,22 @@ export const createProductColumns = ({ onEdit, onDelete }: ProductColumnsProps):
                     <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="h-8 w-8 p-0">
                             <span className="sr-only">Open menu</span>
-                            <MoreHorizontal className="h-4 w-4" />
+                            <IconDotsVertical className="h-4 w-4" />
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
                         <DropdownMenuItem
-                            onClick={() => navigator.clipboard.writeText(product._id)}
+                            onClick={() => onEdit(product)}
                         >
-                            <Eye className="mr-2 h-4 w-4" />
-                            Copy product ID
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => onEdit(product)}>
-                            <Edit className="mr-2 h-4 w-4" />
-                            Edit product
+                            <IconEdit className="mr-2 h-4 w-4" />
+                            Edit
                         </DropdownMenuItem>
                         <DropdownMenuItem
                             onClick={() => onDelete(product)}
                             className="text-red-600"
                         >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Delete product
+                            <IconTrash className="mr-2 h-4 w-4" />
+                            Delete
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>

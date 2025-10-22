@@ -228,28 +228,6 @@ export function SalespersonDetailDialog({ open, onClose, salesperson }: Salesper
                             )}
                         </div>
                     </section>
-
-                    {/* ---------- System Information ---------- */}
-                    <section className="rounded-xl border border-border/50 dark:border-border/60 bg-card/30 dark:bg-card/50 p-6 space-y-6 shadow-sm">
-                        <h2 className="text-lg font-medium text-foreground/80 tracking-tight">
-                            System Information
-                        </h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <Label className="mb-2">Created At</Label>
-                                <div className="p-3 bg-muted/50 rounded-md border border-border/30 text-sm">
-                                    {formatDate(salesperson.createdAt)}
-                                </div>
-                            </div>
-
-                            <div>
-                                <Label className="mb-2">Last Updated</Label>
-                                <div className="p-3 bg-muted/50 rounded-md border border-border/30 text-sm">
-                                    {formatDate(salesperson.updatedAt)}
-                                </div>
-                            </div>
-                        </div>
-                    </section>
                 </div>
             </SheetContent>
         </Sheet>

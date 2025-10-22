@@ -19,8 +19,10 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
+import { FileUpload } from "@/components/FileUpload"
 import { updateSalesperson } from "@/services/salesperson"
 import { Salesperson, UpdateSalespersonRequest } from "@/types/salesperson"
+import { UPLOAD_ENDPOINTS } from "@/services/upload"
 
 interface SalespersonEditDialogProps {
     open: boolean
@@ -350,13 +352,12 @@ export function SalespersonEditDialog({ open, onClose, onSuccess, salesperson }:
                                 )}
                             </div>
 
-                            <div>
-                                <Label htmlFor="edit-selfie" className="mb-2">Selfie (URL)</Label>
-                                <Input
-                                    id="edit-selfie"
+                            <div className="md:col-span-2">
+                                <FileUpload
+                                    label="Selfie"
                                     value={formData.selfie}
-                                    onChange={(e) => setFormData((p) => ({ ...p, selfie: e.target.value }))}
-                                    placeholder="Enter selfie image URL"
+                                    onChange={(url) => setFormData((p) => ({ ...p, selfie: url }))}
+                                    endpoint={UPLOAD_ENDPOINTS.SELFIE}
                                     disabled={saving}
                                 />
                             </div>
@@ -410,34 +411,31 @@ export function SalespersonEditDialog({ open, onClose, onSuccess, salesperson }:
                             </div>
 
                             <div>
-                                <Label htmlFor="edit-aadharCardFront" className="mb-2">Aadhaar Card Front (URL)</Label>
-                                <Input
-                                    id="edit-aadharCardFront"
+                                <FileUpload
+                                    label="Aadhaar Card Front"
                                     value={formData.aadharCardFront}
-                                    onChange={(e) => setFormData((p) => ({ ...p, aadharCardFront: e.target.value }))}
-                                    placeholder="Enter Aadhaar card front image URL"
+                                    onChange={(url) => setFormData((p) => ({ ...p, aadharCardFront: url }))}
+                                    endpoint={UPLOAD_ENDPOINTS.AADHAR_FRONT}
                                     disabled={saving}
                                 />
                             </div>
 
                             <div>
-                                <Label htmlFor="edit-aadharCardBack" className="mb-2">Aadhaar Card Back (URL)</Label>
-                                <Input
-                                    id="edit-aadharCardBack"
+                                <FileUpload
+                                    label="Aadhaar Card Back"
                                     value={formData.aadharCardBack}
-                                    onChange={(e) => setFormData((p) => ({ ...p, aadharCardBack: e.target.value }))}
-                                    placeholder="Enter Aadhaar card back image URL"
+                                    onChange={(url) => setFormData((p) => ({ ...p, aadharCardBack: url }))}
+                                    endpoint={UPLOAD_ENDPOINTS.AADHAR_BACK}
                                     disabled={saving}
                                 />
                             </div>
 
                             <div>
-                                <Label htmlFor="edit-panCardFront" className="mb-2">PAN Card Front (URL)</Label>
-                                <Input
-                                    id="edit-panCardFront"
+                                <FileUpload
+                                    label="PAN Card Front"
                                     value={formData.panCardFront}
-                                    onChange={(e) => setFormData((p) => ({ ...p, panCardFront: e.target.value }))}
-                                    placeholder="Enter PAN card front image URL"
+                                    onChange={(url) => setFormData((p) => ({ ...p, panCardFront: url }))}
+                                    endpoint={UPLOAD_ENDPOINTS.PAN_FRONT}
                                     disabled={saving}
                                 />
                             </div>
@@ -511,12 +509,11 @@ export function SalespersonEditDialog({ open, onClose, onSuccess, salesperson }:
                             </div>
 
                             <div>
-                                <Label htmlFor="edit-cancelChequePhoto" className="mb-2">Cancel Cheque Photo (URL)</Label>
-                                <Input
-                                    id="edit-cancelChequePhoto"
+                                <FileUpload
+                                    label="Cancel Cheque Photo"
                                     value={formData.cancelChequePhoto}
-                                    onChange={(e) => setFormData((p) => ({ ...p, cancelChequePhoto: e.target.value }))}
-                                    placeholder="Enter cancel cheque photo URL"
+                                    onChange={(url) => setFormData((p) => ({ ...p, cancelChequePhoto: url }))}
+                                    endpoint={UPLOAD_ENDPOINTS.CANCEL_CHEQUE}
                                     disabled={saving}
                                 />
                             </div>

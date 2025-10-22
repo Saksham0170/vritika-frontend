@@ -73,6 +73,25 @@ const adminNavMain = [
   },
 ]
 
+// Navigation items for SubAdmin (limited access: Dashboard, Sub Admin Management, Salesperson Management)
+const subAdminNavMain = [
+  {
+    title: "Dashboard",
+    url: "/dashboard",
+    icon: IconDashboard,
+  },
+  {
+    title: "Sub Admin Management",
+    url: "/sub-admin-management",
+    icon: IconUserShield,
+  },
+  {
+    title: "Salesperson Management",
+    url: "/salesperson-management",
+    icon: IconUserCheck,
+  },
+]
+
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { userData, hasHydrated } = useUserStore()
@@ -89,6 +108,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         return superAdminNavMain
       case "Admin":
         return adminNavMain
+      case "SubAdmin":
+        return subAdminNavMain
       default:
         // Fallback for unknown user types
         console.warn(`Unknown user type: ${userData.userType}`)
