@@ -1,0 +1,24 @@
+{
+    "name": "John Doe",
+    "phone": "1234567890",
+    "email": "admin@example.com",
+    "adminType": "Organisation",
+    "gstNo": "27AABCU9603R1ZM",
+    "contactPersonName": "Jane Doe",
+    "address": "123 Main Street, Springfield, USA",
+    "aadharCardNo": "1234-5678-9012",
+    "aadharCardImage": [
+        "https://example.com/aadhar_front.jpg",
+        "https://example.com/aadhar_back.jpg"
+    ],
+    "panCardNo": "ABCDE1234F",
+    "panCardImage": [
+        "https://example.com/pan_front.jpg",
+        "https://example.com/pan_back.jpg"
+    ],
+    "bankAccountNo": "123456789012",
+    "ifscCode": "SBIN0001234",
+    "bankHolderName": "John Doe",
+    "passbookImage": "https://example.com/passbook.jpg",
+    "password": "Admin@123"
+}

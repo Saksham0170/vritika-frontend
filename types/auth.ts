@@ -10,7 +10,7 @@ export interface LoginResponse {
     userData: {
         _id: string
         email: string
-        userType: "Admin" | "Super Admin"
+        userType: "Admin" | "Super Admin" | "SubAdmin"
         name: string
         image?: string
     }

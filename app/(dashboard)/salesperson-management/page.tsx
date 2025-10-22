@@ -1,69 +1,143 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+"use client"
+
+import { useState, useEffect } from "react"
+import { createSalespersonColumns } from "./components/columns"
+import { DataTable } from "@/components/data-table"
+import { deleteSalesperson, getSalespersonsPaginated } from "@/services/salesperson"
+import { Salesperson } from "@/types/salesperson"
+import { SalespersonDetailDialog } from "./components/salesperson-detail-dialog"
+import { SalespersonEditDialog } from "./components/salesperson-edit-dialog"
+import { SalespersonAddDialog } from "./components/salesperson-add-dialog"
 
 export default function SalespersonManagementPage() {
+  const [salespersons, setSalespersons] = useState<Salesperson[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [selectedSalespersonId, setSelectedSalespersonId] = useState<string | null>(null)
+  const [editingSalespersonId, setEditingSalespersonId] = useState<string | null>(null)
+  const [isAddingSalesperson, setIsAddingSalesperson] = useState(false)
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
+  const [totalCount, setTotalCount] = useState(0)
+
+  const loadSalespersons = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      const response = await getSalespersonsPaginated({
+        page: currentPage,
+        limit: pageSize,
+      })
+
+      setSalespersons(response.data || [])
+      // Note: API doesn't provide separate total count, using array length for now
+      // For proper pagination, we might need total count from a separate endpoint or header
+      setTotalCount(response.data.length || 0)
+    } catch (error) {
+      console.error("Error loading salespersons:", error)
+      setError("Failed to load salespersons. Please try again.")
+      setSalespersons([])
+      setTotalCount(0)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadSalespersons()
+  }, [currentPage, pageSize])
+
+  const handlePageChange = (page: number, size: number) => {
+    setCurrentPage(page)
+    setPageSize(size)
+  }
+
+  const handleRowClick = (salesperson: Salesperson) => {
+    setSelectedSalespersonId(salesperson._id)
+  }
+
+  const handleAddSalesperson = () => {
+    setIsAddingSalesperson(true)
+  }
+
+  const handleEdit = (salesperson: Salesperson) => {
+    setEditingSalespersonId(salesperson._id)
+  }
+
+  const handleDelete = async (salesperson: Salesperson) => {
+    const confirmed = window.confirm(
+      `Are you sure you want to delete salesperson "${salesperson.name}"? This action cannot be undone.`
+    )
+
+    if (!confirmed) return
+
+    try {
+      await deleteSalesperson(salesperson._id)
+      await loadSalespersons() // Reload the list
+    } catch (error) {
+      console.error("Error deleting salesperson:", error)
+      alert(`Error deleting salesperson: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    }
+  }
+
+  const salespersonColumns = createSalespersonColumns({
+    onEdit: handleEdit,
+    onDelete: handleDelete,
+  })
+
+  const selectedSalesperson = salespersons.find(s => s._id === selectedSalespersonId)
+  const editingSalesperson = salespersons.find(s => s._id === editingSalespersonId)
+
   return (
-    <div className="flex-1 space-y-4 p-4 pt-6">
-      <div className="flex items-center justify-between space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight">Salesperson Management</h2>
-      </div>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Salespeople</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">34</div>
-            <p className="text-xs text-muted-foreground">
-              +4 from last month
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Salespeople</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">31</div>
-            <p className="text-xs text-muted-foreground">
-              +3 from last month
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Top Performers</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">8</div>
-            <p className="text-xs text-muted-foreground">
-              This month
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Training Required</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">3</div>
-            <p className="text-xs text-muted-foreground">
-              Immediate attention
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-      <Card>
-        <CardHeader>
-          <CardTitle>Salesperson Management</CardTitle>
-          <CardDescription>Manage sales team and their performance</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground">
-            This is the salesperson management page. Here you can manage all sales personnel,
-            track their performance, set targets, and handle training requirements.
-          </p>
-        </CardContent>
-      </Card>
-    </div>
+    <>
+      <DataTable
+        columns={salespersonColumns}
+        data={salespersons}
+        title="Salesperson Management"
+        description="Manage salesperson accounts, view details, and handle permissions"
+        searchKey="name"
+        searchPlaceholder="Search salespersons by name, phone, or email..."
+        onAdd={handleAddSalesperson}
+        addButtonText="Add Salesperson"
+        loading={loading}
+        error={error}
+        onRowClick={handleRowClick}
+        paginationMode="server"
+        totalCount={totalCount}
+        currentPage={currentPage}
+        pageSize={pageSize}
+        onPageChange={handlePageChange}
+      />
+
+      {/* Detail Dialog */}
+      <SalespersonDetailDialog
+        open={!!selectedSalespersonId}
+        onClose={() => setSelectedSalespersonId(null)}
+        salesperson={selectedSalesperson || null}
+      />
+
+      {/* Edit Dialog */}
+      <SalespersonEditDialog
+        open={!!editingSalespersonId}
+        onClose={() => setEditingSalespersonId(null)}
+        onSuccess={() => {
+          setEditingSalespersonId(null)
+          loadSalespersons()
+        }}
+        salesperson={editingSalesperson || null}
+      />
+
+      {/* Add Dialog */}
+      <SalespersonAddDialog
+        open={isAddingSalesperson}
+        onClose={() => setIsAddingSalesperson(false)}
+        onSuccess={() => {
+          setIsAddingSalesperson(false)
+          loadSalespersons()
+        }}
+      />
+    </>
   )
 }

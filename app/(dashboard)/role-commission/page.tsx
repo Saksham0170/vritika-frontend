@@ -1,69 +1,133 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+"use client"
+
+import { useState, useEffect } from "react"
+import { createRoleCommissionColumns } from "./components/columns"
+import { DataTable } from "@/components/data-table"
+import { deleteRoleCommission, getRoleCommissionsPaginated } from "@/services/role-commission"
+import { RoleCommission } from "@/types/role-commission"
+import { RoleCommissionDetailDialog } from "./components/role-commission-detail-dialog"
+import { RoleCommissionEditDialog } from "./components/role-commission-edit-dialog"
+import { RoleCommissionAddDialog } from "./components/role-commission-add-dialog"
 
 export default function RoleCommissionPage() {
+  const [roleCommissions, setRoleCommissions] = useState<RoleCommission[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [selectedRoleCommissionId, setSelectedRoleCommissionId] = useState<string | null>(null)
+  const [editingRoleCommissionId, setEditingRoleCommissionId] = useState<string | null>(null)
+  const [isAddingRoleCommission, setIsAddingRoleCommission] = useState(false)
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
+  const [totalCount, setTotalCount] = useState(0)
+
+  const loadRoleCommissions = async (page: number = currentPage, limit: number = pageSize) => {
+    try {
+      setLoading(true)
+      console.log('Loading role commissions...')
+      const response = await getRoleCommissionsPaginated({ page, limit })
+      console.log('Received role commission response in component:', response)
+      setRoleCommissions(response.data?.data || [])
+      setTotalCount(response.data?.pagination?.total || 0)
+      setError(null)
+    } catch (err: unknown) {
+      console.error("Error loading role commissions:", err)
+      const errorMessage = err instanceof Error ? err.message : "Failed to load role commissions"
+      setError(errorMessage)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadRoleCommissions()
+  }, [])
+
+  const handlePageChange = (page: number, newPageSize: number) => {
+    setCurrentPage(page)
+    if (newPageSize !== pageSize) {
+      setPageSize(newPageSize)
+      // Reset to page 1 when page size changes
+      loadRoleCommissions(1, newPageSize)
+    } else {
+      loadRoleCommissions(page, newPageSize)
+    }
+  }
+
+  const handleAddRoleCommission = () => {
+    setIsAddingRoleCommission(true)
+  }
+
+  const handleRowClick = (roleCommission: RoleCommission) => {
+    setSelectedRoleCommissionId(roleCommission._id)
+  }
+
+  const handleEdit = (roleCommission: RoleCommission) => {
+    setEditingRoleCommissionId(roleCommission._id)
+  }
+
+  const handleDelete = (roleCommission: RoleCommission) => {
+    deleteRoleCommission(roleCommission._id)
+      .then(() => {
+        setRoleCommissions((prev) => prev.filter((rc) => rc._id !== roleCommission._id))
+      })
+  }
+
+  const handleEditSuccess = () => {
+    // Reload role commissions after successful edit
+    loadRoleCommissions()
+  }
+
+  const handleAddSuccess = () => {
+    // Reload role commissions after successful add
+    loadRoleCommissions()
+  }
+
+  const roleCommissionColumns = createRoleCommissionColumns({
+    onEdit: handleEdit,
+    onDelete: handleDelete
+  })
+
   return (
-    <div className="flex-1 space-y-4 p-4 pt-6">
-      <div className="flex items-center justify-between space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight">Role Commission</h2>
-      </div>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Commission Paid</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">₹2,45,670</div>
-            <p className="text-xs text-muted-foreground">
-              +12% from last month
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pending Payments</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">₹45,230</div>
-            <p className="text-xs text-muted-foreground">
-              Due this month
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Commission Rules</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">8</div>
-            <p className="text-xs text-muted-foreground">
-              Active rules configured
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Avg. Commission Rate</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">8.5%</div>
-            <p className="text-xs text-muted-foreground">
-              Across all roles
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-      <Card>
-        <CardHeader>
-          <CardTitle>Role Commission Management</CardTitle>
-          <CardDescription>Manage commission structures and payments for different roles</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground">
-            This is the role commission page. Here you can set up commission structures
-            for different roles, track payments, and manage commission rules.
-          </p>
-        </CardContent>
-      </Card>
-    </div>
+    <>
+      <DataTable
+        columns={roleCommissionColumns}
+        data={roleCommissions}
+        title="Role Commission Management"
+        description="Manage commission rates for different role levels"
+        searchKey="description"
+        searchPlaceholder="Search by description..."
+        onAdd={handleAddRoleCommission}
+        addButtonText="Add Commission"
+        loading={loading}
+        error={error}
+        onRowClick={handleRowClick}
+        paginationMode="server"
+        totalCount={totalCount}
+        currentPage={currentPage}
+        pageSize={pageSize}
+        onPageChange={handlePageChange}
+      />
+
+      <RoleCommissionDetailDialog
+        roleCommissionId={selectedRoleCommissionId}
+        open={!!selectedRoleCommissionId}
+        onClose={() => setSelectedRoleCommissionId(null)}
+      />
+
+      <RoleCommissionEditDialog
+        roleCommissionId={editingRoleCommissionId}
+        open={!!editingRoleCommissionId}
+        onClose={() => setEditingRoleCommissionId(null)}
+        onSuccess={handleEditSuccess}
+      />
+
+      <RoleCommissionAddDialog
+        open={isAddingRoleCommission}
+        onClose={() => setIsAddingRoleCommission(false)}
+        onSuccess={handleAddSuccess}
+      />
+    </>
   )
 }

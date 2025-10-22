@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { createAdminColumns } from "./components/columns"
 import { DataTable } from "@/components/data-table"
-import { deleteAdmin, getAdmins } from "@/services/admin"
+import { deleteAdmin, getAdminsPaginated } from "@/services/admin"
 import { Admin } from "@/types/admin"
 import { AdminDetailDialog } from "./components/admin-detail-dialog"
 import { AdminEditDialog } from "./components/admin-edit-dialog"
@@ -17,13 +17,19 @@ export default function AdminManagementPage() {
   const [editingAdminId, setEditingAdminId] = useState<string | null>(null)
   const [isAddingAdmin, setIsAddingAdmin] = useState(false)
 
-  const loadAdmins = async () => {
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
+  const [totalCount, setTotalCount] = useState(0)
+
+  const loadAdmins = async (page: number = currentPage, limit: number = pageSize) => {
     try {
+      setLoading(true)
       console.log('Loading admins...')
-      const adminData = await getAdmins()
-      console.log('Received admin data in component:', adminData)
-      console.log('Admin data type:', typeof adminData, 'Array?', Array.isArray(adminData))
-      setAdmins(adminData)
+      const response = await getAdminsPaginated({ page, limit })
+      console.log('Received admin response in component:', response)
+      setAdmins(response.data?.data || [])
+      setTotalCount(response.data?.totalData || 0)
       setError(null)
     } catch (err: unknown) {
       console.error("Error loading admins:", err)
@@ -37,6 +43,17 @@ export default function AdminManagementPage() {
   useEffect(() => {
     loadAdmins()
   }, [])
+
+  const handlePageChange = (page: number, newPageSize: number) => {
+    setCurrentPage(page)
+    if (newPageSize !== pageSize) {
+      setPageSize(newPageSize)
+      // Reset to page 1 when page size changes
+      loadAdmins(1, newPageSize)
+    } else {
+      loadAdmins(page, newPageSize)
+    }
+  }
 
   const handleAddAdmin = () => {
     setIsAddingAdmin(true)
@@ -86,6 +103,11 @@ export default function AdminManagementPage() {
         loading={loading}
         error={error}
         onRowClick={handleRowClick}
+        paginationMode="server"
+        totalCount={totalCount}
+        currentPage={currentPage}
+        pageSize={pageSize}
+        onPageChange={handlePageChange}
       />
 
       <AdminDetailDialog
