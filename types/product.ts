@@ -1,53 +1,227 @@
-// Product type enum
-export type ProductType = "BOS" | "Kit" | "Solar Module" | "Inverter" | "Structure"
+// Product type enum - Updated to match the API
+export type ProductType =
+    | "Solar Module"
+    | "Inverter"
+    | "Batteries"
+    | "Cables"
+    | "Structure"
+    | "BOS"
+    | "Service"
+    | "Kit"
+    | "Services/Freebies"
 
+// Enum types for specific fields
+export type SpvTypeModule = "Monocrystalline" | "Polycrystalline" | "TOP CON" | "Bifacial"
+export type SpvTypeInverter = "Ongrid" | "Offgrid" | "Hybrid"
+export type SpvTypeBattery = "Lead Acid" | "Lithium"
+export type SpvTypeCable = "AC Cable" | "DC Cable" | "Earthing Cable"
+export type Phase = "Single Phase" | "Three Phase"
+export type CategoryPricing = "Premium" | "Mid-Priced" | "Low-Priced"
+export type CategoryKit = "Premium" | "Mid" | "Low"
+export type Unit = "meter" | "inch" | "cm"
+
+// Database Product interface - matches API response
 export interface Product {
     _id: string
     productName: string
     type: ProductType
     price: number
-    // Optional fields
+    sellinPrice: number
     image?: string
+
+    // Solar Module specific
     spvBrand?: string
-    spvType?: string
-    phase?: string
-    capacity?: string
+    spvType?: SpvTypeModule | SpvTypeInverter | SpvTypeBattery | SpvTypeCable
+    category?: CategoryPricing | CategoryKit
     spvCapacity?: string
-    service?: string
+
+    // Inverter specific
+    phase?: Phase
+    capacity?: string
+
+    // Structure specific
+    height?: string
+    width?: string
+    weight?: string
+    elevateStructure?: string
+
+    // Cables specific
+    unit?: Unit
+    free?: string
     thickness?: string
+
+    // Service specific
+    description?: string
+
+    // Kit specific
+    mrp?: number
+    sellingPrice?: number
+
+    // Timestamps
     createdAt?: string
     updatedAt?: string
     __v?: number
 }
 
+// Base interface for form fields
+interface BaseProductForm {
+    productName: string
+    image?: string
+    price: number
+    sellinPrice: number
+    type: ProductType
+}
+
+// Type-specific form interfaces based on API specifications
+
+export interface SolarModuleForm extends BaseProductForm {
+    type: "Solar Module"
+    spvBrand: string
+    spvType: SpvTypeModule
+    category: CategoryPricing
+    spvCapacity: string
+}
+
+export interface InverterForm extends BaseProductForm {
+    type: "Inverter"
+    spvBrand: string
+    spvType: SpvTypeInverter
+    phase: Phase
+    capacity: string
+}
+
+export interface StructureForm extends BaseProductForm {
+    type: "Structure"
+    height: string
+    width: string
+    weight: string
+    category: CategoryPricing
+    elevateStructure: string
+}
+
+export interface BatteriesForm extends BaseProductForm {
+    type: "Batteries"
+    spvBrand: string
+    spvType: SpvTypeBattery
+}
+
+export interface CablesForm extends BaseProductForm {
+    type: "Cables"
+    spvBrand: string
+    spvType: SpvTypeCable
+    unit: Unit
+    free: string
+    thickness: string
+}
+
+export interface BOSForm extends BaseProductForm {
+    type: "BOS"
+}
+
+export interface ServiceForm extends BaseProductForm {
+    type: "Service"
+    description: string
+}
+
+export interface KitForm extends BaseProductForm {
+    type: "Kit"
+    spvBrand: string
+    category: CategoryKit
+    spvCapacity: string
+    mrp: number
+    sellingPrice: number
+    description: string
+}
+
+export interface ServicesFreebiesForm extends BaseProductForm {
+    type: "Services/Freebies"
+    category: string
+    description?: string
+}
+
+// Union type for form usage
+export type ProductForm =
+    | SolarModuleForm
+    | InverterForm
+    | BatteriesForm
+    | CablesForm
+    | StructureForm
+    | BOSForm
+    | ServiceForm
+    | KitForm
+    | ServicesFreebiesForm
+
+// API Request/Response types
 export interface CreateProductRequest {
     productName: string
     type: ProductType
     price: number
-    // Optional fields
-    spvBrand?: string
-    spvType?: string
-    phase?: string
-    capacity?: string
-    spvCapacity?: string
-    service?: string
-    thickness?: string
+    sellinPrice: number
     image?: string
+
+    // Solar Module fields
+    spvBrand?: string
+    spvType?: SpvTypeModule | SpvTypeInverter | SpvTypeBattery | SpvTypeCable
+    category?: CategoryPricing | CategoryKit | string
+    spvCapacity?: string
+
+    // Inverter fields
+    phase?: Phase
+    capacity?: string
+
+    // Structure fields
+    height?: string
+    width?: string
+    weight?: string
+    elevateStructure?: string
+
+    // Cables fields
+    unit?: Unit
+    free?: string
+    thickness?: string
+
+    // Service fields
+    description?: string
+
+    // Kit fields
+    mrp?: number
+    sellingPrice?: number
 }
 
 export interface UpdateProductRequest {
     productName?: string
     type?: ProductType
     price?: number
-    // Optional fields
-    spvBrand?: string
-    spvType?: string
-    phase?: string
-    capacity?: string
-    spvCapacity?: string
-    service?: string
-    thickness?: string
+    sellinPrice?: number
     image?: string
+
+    // Solar Module fields
+    spvBrand?: string
+    spvType?: SpvTypeModule | SpvTypeInverter | SpvTypeBattery | SpvTypeCable
+    category?: CategoryPricing | CategoryKit | string
+    spvCapacity?: string
+
+    // Inverter fields
+    phase?: Phase
+    capacity?: string
+
+    // Structure fields
+    height?: string
+    width?: string
+    weight?: string
+    elevateStructure?: string
+
+    // Cables fields
+    unit?: Unit
+    free?: string
+    thickness?: string
+
+    // Service fields
+    description?: string
+
+    // Kit fields
+    mrp?: number
+    sellingPrice?: number
 }
 
 export interface ProductsResponse {

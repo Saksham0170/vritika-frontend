@@ -4,7 +4,7 @@ import { persist } from 'zustand/middleware'
 interface UserData {
     _id: string
     email: string
-    userType: "Admin" | "SuperAdmin"
+    userType: "Admin" | "SuperAdmin" | "SubAdmin"
     name: string
     image?: string
 }

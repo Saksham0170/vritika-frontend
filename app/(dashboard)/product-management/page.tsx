@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { createProductColumns } from "./components/columns"
 import { DataTable } from "@/components/data-table"
 import { deleteProduct, getProductsPaginated } from "@/services/product"
-import { Product } from "@/types/product"
+import { Product, ProductType } from "@/types/product"
 import { ProductDetailDialog } from "./components/product-detail-dialog"
 import { ProductEditDialog } from "./components/product-edit-dialog"
 import { ProductAddDialog } from "./components/product-add-dialog"
@@ -16,6 +16,25 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+
+// Product type configurations
+const PRODUCT_TYPES: ProductType[] = [
+  "Solar Module",
+  "Inverter",
+  "Batteries",
+  "Cables",
+  "Structure",
+  "BOS",
+  "Service",
+  "Kit",
+  "Services/Freebies"
+]
+
+
+const getActiveButtonClass = () => {
+  return "bg-accent text-accent-foreground border-accent shadow-sm"
+}
 
 export default function ProductManagementPage() {
   const [products, setProducts] = useState<Product[]>([])
@@ -26,16 +45,21 @@ export default function ProductManagementPage() {
   const [isAddingProduct, setIsAddingProduct] = useState(false)
   const [deletingProduct, setDeletingProduct] = useState<Product | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [activeTab, setActiveTab] = useState<ProductType>("Solar Module")
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
   const [totalCount, setTotalCount] = useState(0)
 
-  const loadProducts = async (page: number = currentPage, limit: number = pageSize) => {
+  const loadProducts = async (page: number = currentPage, limit: number = pageSize, type?: ProductType) => {
     try {
       setLoading(true)
-      const response = await getProductsPaginated({ page, limit })
+      const response = await getProductsPaginated({
+        page,
+        limit,
+        type: type || activeTab
+      })
       setProducts(response.data?.data || [])
       setTotalCount(response.data?.totalData || 0)
       setError(null)
@@ -50,7 +74,7 @@ export default function ProductManagementPage() {
 
   useEffect(() => {
     loadProducts()
-  }, [])
+  }, [activeTab])
 
   const handlePageChange = (page: number, newPageSize: number) => {
     setCurrentPage(page)
@@ -61,6 +85,13 @@ export default function ProductManagementPage() {
     } else {
       loadProducts(page, newPageSize)
     }
+  }
+
+  const handleTabChange = (newTab: ProductType) => {
+    setActiveTab(newTab)
+    setCurrentPage(1)
+    setProducts([])
+    // loadProducts will be called by useEffect
   }
 
   const handleAddProduct = () => {
@@ -111,25 +142,54 @@ export default function ProductManagementPage() {
   })
 
   return (
-    <>
-      <DataTable
-        columns={productColumns}
-        data={products}
-        title="Product Management"
-        description="Full control over your products, inventory and pricing"
-        searchKey="productName"
-        searchPlaceholder="Search products..."
-        onAdd={handleAddProduct}
-        addButtonText="Add Product"
-        loading={loading}
-        error={error}
-        onRowClick={handleRowClick}
-        paginationMode="server"
-        totalCount={totalCount}
-        currentPage={currentPage}
-        pageSize={pageSize}
-        onPageChange={handlePageChange}
-      />
+    <div className="space-y-6">
+      {/* Header Section */}
+      <div className="mb-6 px-6 pt-6">
+        <h1 className="text-2xl font-bold">Product Management</h1>
+        <p className="text-muted-foreground">
+          Manage different types of products efficiently by categorizing them below.
+        </p>
+      </div>
+
+      {/* Product Type Navigation */}
+      <div className="flex flex-wrap gap-2 mb-6 px-6">
+        {PRODUCT_TYPES.map((type) => {
+          const isActive = activeTab === type
+          return (
+            <Button
+              key={type}
+              variant="ghost"
+              onClick={() => handleTabChange(type)}
+              className={`flex items-center justify-center gap-2 h-auto p-3 rounded-lg transition-all duration-200 border ${isActive
+                ? getActiveButtonClass()
+                : 'hover:bg-accent/30 border-transparent'
+                }`}
+            >
+              {type}
+            </Button>
+          )
+        })}
+      </div>
+
+      {/* Content for each type */}
+      <div className="mt-6">
+        <DataTable
+          columns={productColumns}
+          data={products}
+          searchKey="productName"
+          searchPlaceholder={`Search ${activeTab.toLowerCase()} ...`}
+          onAdd={() => handleAddProduct()}
+          addButtonText={`Add ${activeTab}`}
+          loading={loading}
+          error={error}
+          onRowClick={handleRowClick}
+          paginationMode="server"
+          totalCount={totalCount}
+          currentPage={currentPage}
+          pageSize={pageSize}
+          onPageChange={handlePageChange}
+        />
+      </div>
 
       <ProductDetailDialog
         productId={selectedProductId}
@@ -148,11 +208,12 @@ export default function ProductManagementPage() {
         open={isAddingProduct}
         onClose={() => setIsAddingProduct(false)}
         onSuccess={handleAddSuccess}
+        selectedType={activeTab}
       />
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={!!deletingProduct} onOpenChange={(open) => !open && setDeletingProduct(null)}>
-        <DialogContent>
+        <DialogContent className="rounded-xl">
           <DialogHeader>
             <DialogTitle>Confirm Delete</DialogTitle>
           </DialogHeader>
@@ -180,6 +241,6 @@ export default function ProductManagementPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </>
+    </div>
   )
 }

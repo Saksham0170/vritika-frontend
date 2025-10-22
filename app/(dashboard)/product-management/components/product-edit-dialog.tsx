@@ -2,12 +2,12 @@
 
 import { useState, useEffect } from "react"
 import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogFooter,
-} from "@/components/ui/dialog"
+    Sheet,
+    SheetContent,
+    SheetHeader,
+    SheetTitle,
+    SheetFooter,
+} from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -19,8 +19,20 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { LoadingSpinner } from "@/components/ui/loading-components"
+import { FileUpload } from "@/components/FileUpload"
 import { getProductById, updateProduct } from "@/services/product"
-import { Product, UpdateProductRequest, ProductType } from "@/types/product"
+import {
+    Product,
+    UpdateProductRequest,
+    ProductType,
+    SpvTypeModule,
+    SpvTypeInverter,
+    SpvTypeBattery,
+    SpvTypeCable,
+    Phase,
+    Unit
+} from "@/types/product"
+import { UPLOAD_ENDPOINTS } from "@/services/upload"
 
 interface ProductEditDialogProps {
     productId: string | null
@@ -29,11 +41,60 @@ interface ProductEditDialogProps {
     onSuccess?: () => void
 }
 
-const productTypes: ProductType[] = ["BOS", "Kit", "Solar Module", "Inverter", "Structure"]
+const productTypes: ProductType[] = ["Solar Module", "Inverter", "Batteries", "Cables", "Structure", "BOS", "Service", "Kit", "Services/Freebies"]
 
 const phaseOptions = [
     "Single Phase",
     "Three Phase"
+]
+
+// Solar Module SPV Type options
+const solarModuleSpvTypes = [
+    "Monocrystalline",
+    "Polycrystalline",
+    "TOP CON",
+    "Bifacial"
+]
+
+// Inverter SPV Type options
+const inverterSpvTypes = [
+    "Ongrid",
+    "Offgrid",
+    "Hybrid"
+]
+
+// Battery SPV Type options
+const batterySpvTypes = [
+    "Lead Acid",
+    "Lithium"
+]
+
+// Cable SPV Type options
+const cableSpvTypes = [
+    "AC Cable",
+    "DC Cable",
+    "Earthing Cable"
+]
+
+// Category options for pricing
+const categoryPricingOptions = [
+    "Premium",
+    "Mid-Priced",
+    "Low-Priced"
+]
+
+// Category options for Kit
+const categoryKitOptions = [
+    "Premium",
+    "Mid",
+    "Low"
+]
+
+// Unit options
+const unitOptions = [
+    "meter",
+    "inch",
+    "cm"
 ]
 
 export function ProductEditDialog({ productId, open, onClose, onSuccess }: ProductEditDialogProps) {
@@ -45,21 +106,29 @@ export function ProductEditDialog({ productId, open, onClose, onSuccess }: Produ
         productName: "",
         type: "" as ProductType | "",
         price: "",
-        // Optional fields
+        sellinPrice: "",
+        // Optional fields based on product type
         image: "",
         spvBrand: "",
         spvType: "",
+        category: "",
+        spvCapacity: "",
         phase: "",
         capacity: "",
-        spvCapacity: "",
-        service: "",
+        height: "",
+        width: "",
+        weight: "",
+        elevateStructure: "",
+        unit: "",
+        free: "",
         thickness: "",
+        description: "",
     })
 
     const [fieldErrors, setFieldErrors] = useState({
         productName: "",
-        type: "",
-        price: ""
+        price: "",
+        sellinPrice: ""
     })
 
     useEffect(() => {
@@ -80,14 +149,22 @@ export function ProductEditDialog({ productId, open, onClose, onSuccess }: Produ
                 productName: productData.productName || "",
                 type: productData.type || "",
                 price: productData.price?.toString() || "",
+                sellinPrice: productData.sellinPrice?.toString() || "",
                 image: productData.image || "",
                 spvBrand: productData.spvBrand || "",
-                spvType: productData.spvType || "",
+                spvType: productData.spvType?.toString() || "",
+                category: productData.category || "",
+                spvCapacity: productData.spvCapacity || "",
                 phase: productData.phase || "",
                 capacity: productData.capacity || "",
-                spvCapacity: productData.spvCapacity || "",
-                service: productData.service || "",
+                height: productData.height || "",
+                width: productData.width || "",
+                weight: productData.weight || "",
+                elevateStructure: productData.elevateStructure || "",
+                unit: productData.unit || "",
+                free: productData.free || "",
                 thickness: productData.thickness || "",
+                description: productData.description || "",
             })
         } catch (error) {
             console.error("Error loading product:", error)
@@ -106,22 +183,24 @@ export function ProductEditDialog({ productId, open, onClose, onSuccess }: Produ
     const validateForm = () => {
         const errors = {
             productName: "",
-            type: "",
-            price: ""
+            price: "",
+            sellinPrice: ""
         }
 
         if (!formData.productName.trim()) {
             errors.productName = "Product name is required"
         }
 
-        if (!formData.type) {
-            errors.type = "Product type is required"
+        if (!formData.price.trim()) {
+            errors.price = "MRP is required"
+        } else if (isNaN(Number(formData.price)) || Number(formData.price) <= 0) {
+            errors.price = "MRP must be a valid positive number"
         }
 
-        if (!formData.price.trim()) {
-            errors.price = "Price is required"
-        } else if (isNaN(Number(formData.price)) || Number(formData.price) <= 0) {
-            errors.price = "Price must be a valid positive number"
+        if (!formData.sellinPrice.trim()) {
+            errors.sellinPrice = "Selling Price is required"
+        } else if (isNaN(Number(formData.sellinPrice)) || Number(formData.sellinPrice) <= 0) {
+            errors.sellinPrice = "Selling Price must be a valid positive number"
         }
 
         setFieldErrors(errors)
@@ -131,10 +210,10 @@ export function ProductEditDialog({ productId, open, onClose, onSuccess }: Produ
             setTimeout(() => {
                 if (errors.productName) {
                     document.getElementById("productName")?.focus()
-                } else if (errors.type) {
-                    (document.querySelector('[data-field="type"] button') as HTMLButtonElement)?.focus()
                 } else if (errors.price) {
                     document.getElementById("price")?.focus()
+                } else if (errors.sellinPrice) {
+                    document.getElementById("sellinPrice")?.focus()
                 }
             }, 100)
         }
@@ -157,14 +236,14 @@ export function ProductEditDialog({ productId, open, onClose, onSuccess }: Produ
                 productName: formData.productName.trim(),
                 type: formData.type as ProductType,
                 price: Number(formData.price),
+                sellinPrice: Number(formData.sellinPrice),
                 // Optional fields
                 image: formData.image.trim() || undefined,
                 spvBrand: formData.spvBrand.trim() || undefined,
-                spvType: formData.spvType.trim() || undefined,
-                phase: formData.phase || undefined,
+                spvType: (formData.spvType.trim() as SpvTypeModule | SpvTypeInverter | SpvTypeBattery | SpvTypeCable) || undefined,
+                phase: (formData.phase as Phase) || undefined,
                 capacity: formData.capacity.trim() || undefined,
                 spvCapacity: formData.spvCapacity.trim() || undefined,
-                service: formData.service.trim() || undefined,
                 thickness: formData.thickness.trim() || undefined,
             }
 
@@ -180,42 +259,481 @@ export function ProductEditDialog({ productId, open, onClose, onSuccess }: Produ
 
     const handleClose = () => {
         if (loading || saving) return
-        
+
         setProduct(null)
         setFormData({
             productName: "",
             type: "",
             price: "",
+            sellinPrice: "",
             image: "",
             spvBrand: "",
             spvType: "",
+            category: "",
+            spvCapacity: "",
             phase: "",
             capacity: "",
-            spvCapacity: "",
-            service: "",
+            height: "",
+            width: "",
+            weight: "",
+            elevateStructure: "",
+            unit: "",
+            free: "",
             thickness: "",
+            description: "",
         })
         setFieldErrors({
             productName: "",
-            type: "",
-            price: ""
+            price: "",
+            sellinPrice: ""
         })
         onClose()
     }
 
+    const renderTypeSpecificFields = () => {
+        switch (formData.type) {
+            case "Solar Module":
+                return (
+                    <>
+                        <div>
+                            <Label htmlFor="spvBrand" className="mb-2">
+                                SPV Brand <span className="text-red-500">*</span>
+                            </Label>
+                            <Input
+                                id="spvBrand"
+                                value={formData.spvBrand}
+                                onChange={(e) => handleInputChange("spvBrand", e.target.value)}
+                                placeholder="Enter SPV brand"
+                            />
+                        </div>
+                        <div>
+                            <Label className="mb-2">
+                                SPV Type <span className="text-red-500">*</span>
+                            </Label>
+                            <Select
+                                value={formData.spvType}
+                                onValueChange={(value) => handleInputChange("spvType", value)}
+                            >
+                                <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Select SPV type" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {solarModuleSpvTypes.map((type) => (
+                                        <SelectItem key={type} value={type}>
+                                            {type}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div>
+                            <Label className="mb-2">
+                                Category <span className="text-red-500">*</span>
+                            </Label>
+                            <Select
+                                value={formData.category}
+                                onValueChange={(value) => handleInputChange("category", value)}
+                            >
+                                <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Select category" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {categoryPricingOptions.map((category) => (
+                                        <SelectItem key={category} value={category}>
+                                            {category}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div>
+                            <Label htmlFor="spvCapacity" className="mb-2">
+                                SPV Capacity <span className="text-red-500">*</span>
+                            </Label>
+                            <Input
+                                id="spvCapacity"
+                                value={formData.spvCapacity}
+                                onChange={(e) => handleInputChange("spvCapacity", e.target.value)}
+                                placeholder="Enter SPV capacity"
+                            />
+                        </div>
+                    </>
+                )
+
+            case "Inverter":
+                return (
+                    <>
+                        <div>
+                            <Label htmlFor="spvBrand" className="mb-2">
+                                SPV Brand <span className="text-red-500">*</span>
+                            </Label>
+                            <Input
+                                id="spvBrand"
+                                value={formData.spvBrand}
+                                onChange={(e) => handleInputChange("spvBrand", e.target.value)}
+                                placeholder="Enter SPV brand"
+                            />
+                        </div>
+                        <div>
+                            <Label className="mb-2">
+                                SPV Type <span className="text-red-500">*</span>
+                            </Label>
+                            <Select
+                                value={formData.spvType}
+                                onValueChange={(value) => handleInputChange("spvType", value)}
+                            >
+                                <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Select SPV type" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {inverterSpvTypes.map((type) => (
+                                        <SelectItem key={type} value={type}>
+                                            {type}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div>
+                            <Label className="mb-2">
+                                Phase <span className="text-red-500">*</span>
+                            </Label>
+                            <Select
+                                value={formData.phase}
+                                onValueChange={(value) => handleInputChange("phase", value)}
+                            >
+                                <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Select phase" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {phaseOptions.map((phase) => (
+                                        <SelectItem key={phase} value={phase}>
+                                            {phase}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div>
+                            <Label htmlFor="capacity" className="mb-2">
+                                Capacity <span className="text-red-500">*</span>
+                            </Label>
+                            <Input
+                                id="capacity"
+                                value={formData.capacity}
+                                onChange={(e) => handleInputChange("capacity", e.target.value)}
+                                placeholder="Enter capacity"
+                            />
+                        </div>
+                    </>
+                )
+
+            case "Batteries":
+                return (
+                    <>
+                        <div>
+                            <Label htmlFor="spvBrand" className="mb-2">
+                                SPV Brand <span className="text-red-500">*</span>
+                            </Label>
+                            <Input
+                                id="spvBrand"
+                                value={formData.spvBrand}
+                                onChange={(e) => handleInputChange("spvBrand", e.target.value)}
+                                placeholder="Enter SPV brand"
+                            />
+                        </div>
+                        <div>
+                            <Label className="mb-2">
+                                SPV Type <span className="text-red-500">*</span>
+                            </Label>
+                            <Select
+                                value={formData.spvType}
+                                onValueChange={(value) => handleInputChange("spvType", value)}
+                            >
+                                <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Select SPV type" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {batterySpvTypes.map((type) => (
+                                        <SelectItem key={type} value={type}>
+                                            {type}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div>
+                            <Label htmlFor="capacity" className="mb-2">
+                                Capacity <span className="text-red-500">*</span>
+                            </Label>
+                            <Input
+                                id="capacity"
+                                value={formData.capacity}
+                                onChange={(e) => handleInputChange("capacity", e.target.value)}
+                                placeholder="Enter capacity"
+                            />
+                        </div>
+                        <div>
+                            <Label className="mb-2">
+                                Category <span className="text-red-500">*</span>
+                            </Label>
+                            <Select
+                                value={formData.category}
+                                onValueChange={(value) => handleInputChange("category", value)}
+                            >
+                                <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Select category" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {categoryPricingOptions.map((category) => (
+                                        <SelectItem key={category} value={category}>
+                                            {category}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </>
+                )
+
+            case "Cables":
+                return (
+                    <>
+                        <div>
+                            <Label className="mb-2">
+                                SPV Type <span className="text-red-500">*</span>
+                            </Label>
+                            <Select
+                                value={formData.spvType}
+                                onValueChange={(value) => handleInputChange("spvType", value)}
+                            >
+                                <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Select SPV type" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {cableSpvTypes.map((type) => (
+                                        <SelectItem key={type} value={type}>
+                                            {type}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div>
+                            <Label className="mb-2">
+                                Unit <span className="text-red-500">*</span>
+                            </Label>
+                            <Select
+                                value={formData.unit}
+                                onValueChange={(value) => handleInputChange("unit", value)}
+                            >
+                                <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Select unit" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {unitOptions.map((unit) => (
+                                        <SelectItem key={unit} value={unit}>
+                                            {unit}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div>
+                            <Label htmlFor="free" className="mb-2">
+                                Free
+                            </Label>
+                            <Input
+                                id="free"
+                                value={formData.free}
+                                onChange={(e) => handleInputChange("free", e.target.value)}
+                                placeholder="Enter free details"
+                            />
+                        </div>
+                        <div>
+                            <Label htmlFor="thickness" className="mb-2">
+                                Thickness
+                            </Label>
+                            <Input
+                                id="thickness"
+                                value={formData.thickness}
+                                onChange={(e) => handleInputChange("thickness", e.target.value)}
+                                placeholder="Enter thickness"
+                            />
+                        </div>
+                    </>
+                )
+
+            case "Structure":
+                return (
+                    <>
+                        <div>
+                            <Label htmlFor="height" className="mb-2">
+                                Height <span className="text-red-500">*</span>
+                            </Label>
+                            <Input
+                                id="height"
+                                value={formData.height}
+                                onChange={(e) => handleInputChange("height", e.target.value)}
+                                placeholder="Enter height"
+                            />
+                        </div>
+                        <div>
+                            <Label htmlFor="width" className="mb-2">
+                                Width <span className="text-red-500">*</span>
+                            </Label>
+                            <Input
+                                id="width"
+                                value={formData.width}
+                                onChange={(e) => handleInputChange("width", e.target.value)}
+                                placeholder="Enter width"
+                            />
+                        </div>
+                        <div>
+                            <Label htmlFor="weight" className="mb-2">
+                                Weight <span className="text-red-500">*</span>
+                            </Label>
+                            <Input
+                                id="weight"
+                                value={formData.weight}
+                                onChange={(e) => handleInputChange("weight", e.target.value)}
+                                placeholder="Enter weight"
+                            />
+                        </div>
+                        <div>
+                            <Label className="mb-2">
+                                Category <span className="text-red-500">*</span>
+                            </Label>
+                            <Select
+                                value={formData.category}
+                                onValueChange={(value) => handleInputChange("category", value)}
+                            >
+                                <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Select category" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {categoryPricingOptions.map((category) => (
+                                        <SelectItem key={category} value={category}>
+                                            {category}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div>
+                            <Label htmlFor="elevateStructure" className="mb-2">
+                                Elevate Structure
+                            </Label>
+                            <Input
+                                id="elevateStructure"
+                                value={formData.elevateStructure}
+                                onChange={(e) => handleInputChange("elevateStructure", e.target.value)}
+                                placeholder="Enter elevate structure details"
+                            />
+                        </div>
+                    </>
+                )
+
+            case "BOS":
+                return (
+                    <div className="col-span-2">
+                        <Label htmlFor="description" className="mb-2">
+                            Description <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                            id="description"
+                            value={formData.description}
+                            onChange={(e) => handleInputChange("description", e.target.value)}
+                            placeholder="Enter BOS description"
+                        />
+                    </div>
+                )
+
+            case "Service":
+                return (
+                    <div className="col-span-2">
+                        <Label htmlFor="description" className="mb-2">
+                            Description <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                            id="description"
+                            value={formData.description}
+                            onChange={(e) => handleInputChange("description", e.target.value)}
+                            placeholder="Enter service description"
+                        />
+                    </div>
+                )
+
+            case "Kit":
+                return (
+                    <>
+                        <div>
+                            <Label className="mb-2">
+                                Category <span className="text-red-500">*</span>
+                            </Label>
+                            <Select
+                                value={formData.category}
+                                onValueChange={(value) => handleInputChange("category", value)}
+                            >
+                                <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Select category" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {categoryKitOptions.map((category) => (
+                                        <SelectItem key={category} value={category}>
+                                            {category}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="col-span-2">
+                            <Label htmlFor="description" className="mb-2">
+                                Description <span className="text-red-500">*</span>
+                            </Label>
+                            <Input
+                                id="description"
+                                value={formData.description}
+                                onChange={(e) => handleInputChange("description", e.target.value)}
+                                placeholder="Enter kit description"
+                            />
+                        </div>
+                    </>
+                )
+
+            case "Services/Freebies":
+                return (
+                    <div className="col-span-2">
+                        <Label htmlFor="description" className="mb-2">
+                            Description <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                            id="description"
+                            value={formData.description}
+                            onChange={(e) => handleInputChange("description", e.target.value)}
+                            placeholder="Enter services/freebies description"
+                        />
+                    </div>
+                )
+
+            default:
+                return null
+        }
+    }
+
     return (
-        <Dialog open={open} onOpenChange={handleClose}>
-            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto rounded-2xl border border-border/40 bg-background text-foreground shadow-lg">
-                <DialogHeader className="bg-background/70 backdrop-blur-md border-b border-border/40">
-                    <DialogTitle className="text-xl font-semibold py-0">Edit Product</DialogTitle>
-                </DialogHeader>
+        <Sheet open={open} onOpenChange={handleClose}>
+            <SheetContent side="right" className="w-[80vw] sm:w-[70vw] lg:w-[50vw] xl:w-[40vw] max-w-2xl overflow-y-auto rounded-2xl border border-border/40 bg-background text-foreground shadow-lg">
+                <SheetHeader className="bg-background/70 backdrop-blur-md border-b border-border/40">
+                    <SheetTitle className="text-xl font-semibold py-0">Edit Product</SheetTitle>
+                </SheetHeader>
 
                 {loading ? (
-                    <div className="flex justify-center items-center py-8">
+                    <div className="flex justify-center items-center py-8 px-6">
                         <LoadingSpinner />
                     </div>
                 ) : (
-                    <div className="py-4">
+                    <div className="py-4 px-6">
                         <div className="rounded-xl border border-border/50 dark:border-border/60 bg-card/30 dark:bg-card/50 p-6 space-y-6 shadow-sm">
                             <div className="space-y-6">
                                 {/* Basic Fields */}
@@ -242,40 +760,8 @@ export function ProductEditDialog({ productId, open, onClose, onSuccess }: Produ
                                     </div>
 
                                     <div>
-                                        <Label className="mb-2">
-                                            Product Type <span className="text-red-500">*</span>
-                                        </Label>
-                                        <Select
-                                            value={formData.type}
-                                            onValueChange={(value) => {
-                                                handleInputChange("type", value)
-                                                if (fieldErrors.type) {
-                                                    setFieldErrors(prev => ({ ...prev, type: "" }))
-                                                }
-                                            }}
-                                        >
-                                            <SelectTrigger 
-                                                className={fieldErrors.type ? "border-red-500 focus:border-red-500" : ""}
-                                                data-field="type"
-                                            >
-                                                <SelectValue placeholder="Select product type" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {productTypes.map((type) => (
-                                                    <SelectItem key={type} value={type}>
-                                                        {type}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                        {fieldErrors.type && (
-                                            <p className="text-sm text-red-500 mt-1">{fieldErrors.type}</p>
-                                        )}
-                                    </div>
-
-                                    <div>
                                         <Label htmlFor="price" className="mb-2">
-                                            Price <span className="text-red-500">*</span>
+                                            MRP <span className="text-red-500">*</span>
                                         </Label>
                                         <Input
                                             id="price"
@@ -298,127 +784,60 @@ export function ProductEditDialog({ productId, open, onClose, onSuccess }: Produ
                                     </div>
 
                                     <div>
-                                        <Label htmlFor="image" className="mb-2">
-                                            Image URL
+                                        <Label htmlFor="sellinPrice" className="mb-2">
+                                            Selling Price <span className="text-red-500">*</span>
                                         </Label>
                                         <Input
-                                            id="image"
+                                            id="sellinPrice"
+                                            type="number"
+                                            value={formData.sellinPrice}
+                                            onChange={(e) => {
+                                                handleInputChange("sellinPrice", e.target.value)
+                                                if (fieldErrors.sellinPrice) {
+                                                    setFieldErrors(prev => ({ ...prev, sellinPrice: "" }))
+                                                }
+                                            }}
+                                            className={fieldErrors.sellinPrice ? "border-red-500 focus:border-red-500" : ""}
+                                            placeholder="0.00"
+                                            min="0"
+                                            step="0.01"
+                                        />
+                                        {fieldErrors.sellinPrice && (
+                                            <p className="text-sm text-red-500 mt-1">{fieldErrors.sellinPrice}</p>
+                                        )}
+                                    </div>
+
+                                    <div className="md:col-span-2">
+                                        <FileUpload
+                                            label="Product Image"
                                             value={formData.image}
-                                            onChange={(e) => handleInputChange("image", e.target.value)}
-                                            placeholder="Enter image URL"
+                                            onChange={(url) => handleInputChange("image", url)}
+                                            endpoint={UPLOAD_ENDPOINTS.PRODUCT_IMAGE}
+                                            disabled={saving}
                                         />
                                     </div>
                                 </div>
 
-                                {/* Optional Fields */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div>
-                                        <Label htmlFor="spvBrand" className="mb-2">
-                                            SPV Brand
-                                        </Label>
-                                        <Input
-                                            id="spvBrand"
-                                            value={formData.spvBrand}
-                                            onChange={(e) => handleInputChange("spvBrand", e.target.value)}
-                                            placeholder="Enter SPV brand"
-                                        />
+                                {/* Type-specific Fields */}
+                                {formData.type && (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        {renderTypeSpecificFields()}
                                     </div>
-
-                                    <div>
-                                        <Label htmlFor="spvType" className="mb-2">
-                                            SPV Type
-                                        </Label>
-                                        <Input
-                                            id="spvType"
-                                            value={formData.spvType}
-                                            onChange={(e) => handleInputChange("spvType", e.target.value)}
-                                            placeholder="Enter SPV type"
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <Label className="mb-2">
-                                            Phase
-                                        </Label>
-                                        <Select
-                                            value={formData.phase}
-                                            onValueChange={(value) => handleInputChange("phase", value)}
-                                        >
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Select phase" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {phaseOptions.map((phase) => (
-                                                    <SelectItem key={phase} value={phase}>
-                                                        {phase}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-
-                                    <div>
-                                        <Label htmlFor="capacity" className="mb-2">
-                                            Capacity
-                                        </Label>
-                                        <Input
-                                            id="capacity"
-                                            value={formData.capacity}
-                                            onChange={(e) => handleInputChange("capacity", e.target.value)}
-                                            placeholder="Enter capacity"
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <Label htmlFor="spvCapacity" className="mb-2">
-                                            SPV Capacity
-                                        </Label>
-                                        <Input
-                                            id="spvCapacity"
-                                            value={formData.spvCapacity}
-                                            onChange={(e) => handleInputChange("spvCapacity", e.target.value)}
-                                            placeholder="Enter SPV capacity"
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <Label htmlFor="service" className="mb-2">
-                                            Service
-                                        </Label>
-                                        <Input
-                                            id="service"
-                                            value={formData.service}
-                                            onChange={(e) => handleInputChange("service", e.target.value)}
-                                            placeholder="Enter service"
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <Label htmlFor="thickness" className="mb-2">
-                                            Thickness
-                                        </Label>
-                                        <Input
-                                            id="thickness"
-                                            value={formData.thickness}
-                                            onChange={(e) => handleInputChange("thickness", e.target.value)}
-                                            placeholder="Enter thickness"
-                                        />
-                                    </div>
-                                </div>
+                                )}
                             </div>
                         </div>
                     </div>
                 )}
 
-                <DialogFooter className="flex justify-end space-x-2 border-t border-border/40 bg-background/70 backdrop-blur-md">
+                <SheetFooter className="flex flex-row justify-end gap-3 border-t border-border/40 pt-4 sm:flex-row">
                     <Button variant="outline" onClick={handleClose} disabled={loading || saving}>
                         Cancel
                     </Button>
                     <Button onClick={handleSave} disabled={loading || saving}>
                         {saving ? "Saving..." : "Update Product"}
                     </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
+                </SheetFooter>
+            </SheetContent>
+        </Sheet>
     )
 }

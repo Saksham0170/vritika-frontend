@@ -2,12 +2,12 @@
 
 import { useState, useEffect } from "react"
 import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogFooter,
-} from "@/components/ui/dialog"
+    Sheet,
+    SheetContent,
+    SheetHeader,
+    SheetTitle,
+    SheetFooter,
+} from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Label } from "@/components/ui/label"
@@ -58,157 +58,248 @@ export function ProductDetailDialog({ productId, open, onClose }: ProductDetailD
     }
 
     return (
-        <Dialog open={open} onOpenChange={onClose}>
-            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto rounded-2xl border border-border/40 bg-background text-foreground shadow-lg">
-                <DialogHeader className="bg-background/70 backdrop-blur-md border-b border-border/40">
-                    <DialogTitle className="text-xl font-semibold py-0">Product Details</DialogTitle>
-                </DialogHeader>
+        <Sheet open={open} onOpenChange={onClose}>
+            <SheetContent side="right" className="w-[80vw] sm:w-[70vw] lg:w-[50vw] xl:w-[40vw] max-w-2xl overflow-y-auto rounded-2xl border border-border/40 bg-zinc-100 dark:bg-background text-foreground shadow-lg">
+                <SheetHeader className="bg-zinc-100/70 dark:bg-background/70 backdrop-blur-md border-b border-border/40">
+                    <SheetTitle className="text-xl font-semibold py-0">Product Details</SheetTitle>
+                </SheetHeader>
 
                 {loading && (
-                    <div className="flex justify-center items-center py-8">
-                        <LoadingSpinner />
+                    <div className="flex items-center justify-center py-8">
+                        <LoadingSpinner message="Loading product details..." />
                     </div>
                 )}
 
                 {error && (
-                    <div className="text-center py-8">
-                        <p className="text-red-500">{error}</p>
+                    <div className="text-red-600 text-center py-8 bg-red-50 dark:bg-red-950/20 rounded-lg border border-red-200 dark:border-red-800 mx-6">
+                        {error}
                     </div>
                 )}
 
                 {product && !loading && !error && (
-                    <div className="py-4">
-                        <div className="rounded-xl border border-border/50 dark:border-border/60 bg-card/30 dark:bg-card/50 p-6 space-y-6 shadow-sm">
+                    <div className="py-4 px-6">
+                        {/* ---------- Product Information ---------- */}
+                        <section className="rounded-xl border border-border/50 dark:border-border/60 bg-card/30 dark:bg-card/50 p-6 space-y-6 shadow-sm">
                             <div className="space-y-6">
-                                {/* Basic Information */}
+                                {/* Basic Details */}
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
-                                        <Label className="text-sm font-medium text-muted-foreground">Product Name</Label>
-                                        <p className="text-lg font-semibold mt-1">{product.productName}</p>
+                                        <Label className="mb-2">Product Name</Label>
+                                        <div className="p-3 bg-muted/50 rounded-md border border-border/30 text-sm font-medium">
+                                            {product.productName}
+                                        </div>
                                     </div>
 
                                     <div>
-                                        <Label className="text-sm font-medium text-muted-foreground">Type</Label>
-                                        <div className="mt-1">
+                                        <Label className="mb-2">Type</Label>
+                                        <div className="p-3 bg-muted/50 rounded-md border border-border/30 text-sm">
                                             <Badge variant={getTypeVariant(product.type)}>{product.type}</Badge>
                                         </div>
                                     </div>
 
                                     <div>
-                                        <Label className="text-sm font-medium text-muted-foreground">Price</Label>
-                                        <p className="text-lg font-semibold mt-1 text-green-600">₹{product.price.toLocaleString()}</p>
+                                        <Label className="mb-2">Price</Label>
+                                        <div className="p-3 bg-muted/50 rounded-md border border-border/30 text-sm font-medium text-green-600">
+                                            ₹{product.price.toLocaleString()}
+                                        </div>
                                     </div>
 
-                                    {product.image && (
+                                    {product.sellinPrice && (
                                         <div>
-                                            <Label className="text-sm font-medium text-muted-foreground">Image</Label>
-                                            <div className="mt-2">
-                                                <img 
-                                                    src={product.image} 
-                                                    alt={product.productName}
-                                                    className="w-32 h-32 object-cover rounded-lg border border-border"
-                                                    onError={(e) => {
-                                                        const target = e.target as HTMLImageElement
-                                                        target.style.display = 'none'
-                                                    }}
-                                                />
+                                            <Label className="mb-2">Selling Price</Label>
+                                            <div className="p-3 bg-muted/50 rounded-md border border-border/30 text-sm font-medium text-blue-600">
+                                                ₹{product.sellinPrice.toLocaleString()}
                                             </div>
                                         </div>
                                     )}
                                 </div>
 
-                                {/* Optional Fields */}
-                                <div className="space-y-4">
-                                    <h3 className="text-lg font-semibold border-b border-border pb-2">Additional Information</h3>
-                                    
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        {product.spvBrand && (
-                                            <div>
-                                                <Label className="text-sm font-medium text-muted-foreground">SPV Brand</Label>
-                                                <p className="mt-1">{product.spvBrand}</p>
-                                            </div>
-                                        )}
-
-                                        {product.spvType && (
-                                            <div>
-                                                <Label className="text-sm font-medium text-muted-foreground">SPV Type</Label>
-                                                <p className="mt-1">{product.spvType}</p>
-                                            </div>
-                                        )}
-
-                                        {product.phase && (
-                                            <div>
-                                                <Label className="text-sm font-medium text-muted-foreground">Phase</Label>
-                                                <p className="mt-1">{product.phase}</p>
-                                            </div>
-                                        )}
-
-                                        {product.capacity && (
-                                            <div>
-                                                <Label className="text-sm font-medium text-muted-foreground">Capacity</Label>
-                                                <p className="mt-1">{product.capacity}</p>
-                                            </div>
-                                        )}
-
-                                        {product.spvCapacity && (
-                                            <div>
-                                                <Label className="text-sm font-medium text-muted-foreground">SPV Capacity</Label>
-                                                <p className="mt-1">{product.spvCapacity}</p>
-                                            </div>
-                                        )}
-
-                                        {product.service && (
-                                            <div>
-                                                <Label className="text-sm font-medium text-muted-foreground">Service</Label>
-                                                <p className="mt-1">{product.service}</p>
-                                            </div>
-                                        )}
-
-                                        {product.thickness && (
-                                            <div>
-                                                <Label className="text-sm font-medium text-muted-foreground">Thickness</Label>
-                                                <p className="mt-1">{product.thickness}</p>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-
-                                {/* System Information */}
-                                <div className="space-y-4">
-                                    <h3 className="text-lg font-semibold border-b border-border pb-2">System Information</h3>
-                                    
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div>
-                                            <Label className="text-sm font-medium text-muted-foreground">Product ID</Label>
-                                            <p className="mt-1 font-mono text-sm">{product._id}</p>
+                                {/* Product Image */}
+                                {product.image && (
+                                    <div>
+                                        <Label className="mb-2">Product Image</Label>
+                                        <div className="p-3 bg-muted/50 rounded-md border border-border/30">
+                                            <img
+                                                src={product.image}
+                                                alt={product.productName}
+                                                className="w-32 h-32 object-cover rounded-lg border border-border"
+                                                onError={(e) => {
+                                                    const target = e.target as HTMLImageElement
+                                                    target.style.display = 'none'
+                                                }}
+                                            />
                                         </div>
+                                    </div>
+                                )}
 
+                                {/* Additional Specifications */}
+                                {(product.spvBrand || product.spvType || product.phase || product.capacity || product.spvCapacity || product.category || product.height || product.width || product.weight || product.thickness || product.unit || product.free || product.description) && (
+                                    <div className="pt-4 border-t border-border/30">
+                                        <h3 className="text-lg font-semibold mb-4">Additional Specifications</h3>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            {product.spvBrand && (
+                                                <div>
+                                                    <Label className="mb-2">SPV Brand</Label>
+                                                    <div className="p-3 bg-muted/50 rounded-md border border-border/30 text-sm">
+                                                        {product.spvBrand}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {product.spvType && (
+                                                <div>
+                                                    <Label className="mb-2">SPV Type</Label>
+                                                    <div className="p-3 bg-muted/50 rounded-md border border-border/30 text-sm">
+                                                        {product.spvType}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {product.category && (
+                                                <div>
+                                                    <Label className="mb-2">Category</Label>
+                                                    <div className="p-3 bg-muted/50 rounded-md border border-border/30 text-sm">
+                                                        <Badge variant="outline" className="bg-background/50">
+                                                            {product.category}
+                                                        </Badge>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {product.phase && (
+                                                <div>
+                                                    <Label className="mb-2">Phase</Label>
+                                                    <div className="p-3 bg-muted/50 rounded-md border border-border/30 text-sm">
+                                                        {product.phase}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {product.capacity && (
+                                                <div>
+                                                    <Label className="mb-2">Capacity</Label>
+                                                    <div className="p-3 bg-muted/50 rounded-md border border-border/30 text-sm">
+                                                        {product.capacity}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {product.spvCapacity && (
+                                                <div>
+                                                    <Label className="mb-2">SPV Capacity</Label>
+                                                    <div className="p-3 bg-muted/50 rounded-md border border-border/30 text-sm">
+                                                        {product.spvCapacity}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {product.height && (
+                                                <div>
+                                                    <Label className="mb-2">Height</Label>
+                                                    <div className="p-3 bg-muted/50 rounded-md border border-border/30 text-sm">
+                                                        {product.height}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {product.width && (
+                                                <div>
+                                                    <Label className="mb-2">Width</Label>
+                                                    <div className="p-3 bg-muted/50 rounded-md border border-border/30 text-sm">
+                                                        {product.width}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {product.weight && (
+                                                <div>
+                                                    <Label className="mb-2">Weight</Label>
+                                                    <div className="p-3 bg-muted/50 rounded-md border border-border/30 text-sm">
+                                                        {product.weight}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {product.elevateStructure && (
+                                                <div>
+                                                    <Label className="mb-2">Elevate Structure</Label>
+                                                    <div className="p-3 bg-muted/50 rounded-md border border-border/30 text-sm">
+                                                        {product.elevateStructure}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {product.unit && (
+                                                <div>
+                                                    <Label className="mb-2">Unit</Label>
+                                                    <div className="p-3 bg-muted/50 rounded-md border border-border/30 text-sm">
+                                                        {product.unit}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {product.free && (
+                                                <div>
+                                                    <Label className="mb-2">Free</Label>
+                                                    <div className="p-3 bg-muted/50 rounded-md border border-border/30 text-sm">
+                                                        {product.free}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {product.thickness && (
+                                                <div>
+                                                    <Label className="mb-2">Thickness</Label>
+                                                    <div className="p-3 bg-muted/50 rounded-md border border-border/30 text-sm">
+                                                        {product.thickness}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {product.description && (
+                                                <div className="md:col-span-2">
+                                                    <Label className="mb-2">Description</Label>
+                                                    <div className="p-3 bg-muted/50 rounded-md border border-border/30 text-sm min-h-[80px]">
+                                                        {product.description}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Timestamps */}
+                                {(product.createdAt || product.updatedAt) && (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-border/30">
                                         {product.createdAt && (
                                             <div>
-                                                <Label className="text-sm font-medium text-muted-foreground">Created At</Label>
-                                                <p className="mt-1">{new Date(product.createdAt).toLocaleString()}</p>
+                                                <Label className="mb-2">Created At</Label>
+                                                <div className="p-3 bg-muted/50 rounded-md border border-border/30 text-sm font-mono">
+                                                    {new Date(product.createdAt).toLocaleString()}
+                                                </div>
                                             </div>
                                         )}
-
                                         {product.updatedAt && (
                                             <div>
-                                                <Label className="text-sm font-medium text-muted-foreground">Updated At</Label>
-                                                <p className="mt-1">{new Date(product.updatedAt).toLocaleString()}</p>
+                                                <Label className="mb-2">Updated At</Label>
+                                                <div className="p-3 bg-muted/50 rounded-md border border-border/30 text-sm font-mono">
+                                                    {new Date(product.updatedAt).toLocaleString()}
+                                                </div>
                                             </div>
                                         )}
                                     </div>
-                                </div>
+                                )}
                             </div>
-                        </div>
+                        </section>
                     </div>
                 )}
 
-                <DialogFooter className="border-t border-border/40 bg-background/70 backdrop-blur-md">
-                    <Button variant="outline" onClick={onClose}>
+                <SheetFooter className="flex flex-row justify-end gap-3 border-t border-border/40 pt-4 sm:flex-row">
+                    <Button variant="outline" size="lg" onClick={onClose}>
                         Close
                     </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
+                </SheetFooter>
+            </SheetContent>
+        </Sheet>
     )
 }
