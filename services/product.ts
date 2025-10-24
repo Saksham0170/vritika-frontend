@@ -1,23 +1,12 @@
 import { CreateProductRequest, UpdateProductRequest, Product, ProductsResponse, ProductResponse, GetProductsParams } from '@/types/product'
+import { getAuthHeaders } from '@/lib/auth'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
-
-const getAuthToken = () => {
-    if (typeof window !== 'undefined') {
-        return localStorage.getItem('token')
-    }
-    return null
-}
-
-const getHeaders = () => ({
-    'Content-Type': 'application/json',
-    'Authorization': getAuthToken() || '',
-})
 
 export const createProduct = async (productData: CreateProductRequest): Promise<Product> => {
     const response = await fetch(`${API_BASE_URL}/admin/product`, {
         method: 'POST',
-        headers: getHeaders(),
+        headers: getAuthHeaders(),
         body: JSON.stringify(productData),
     })
 
@@ -44,7 +33,7 @@ export const getProductsPaginated = async (params: GetProductsParams = {}): Prom
 
     const response = await fetch(`${API_BASE_URL}/admin/product?${searchParams.toString()}`, {
         method: 'GET',
-        headers: getHeaders(),
+        headers: getAuthHeaders(),
     })
 
     if (!response.ok) {
@@ -57,7 +46,7 @@ export const getProductsPaginated = async (params: GetProductsParams = {}): Prom
 export const getProducts = async (): Promise<Product[]> => {
     const response = await fetch(`${API_BASE_URL}/admin/product?limit=1000`, {
         method: 'GET',
-        headers: getHeaders(),
+        headers: getAuthHeaders(),
     })
 
     if (!response.ok) {
@@ -71,7 +60,7 @@ export const getProducts = async (): Promise<Product[]> => {
 export const getProductById = async (id: string): Promise<Product> => {
     const response = await fetch(`${API_BASE_URL}/admin/product/${id}`, {
         method: 'GET',
-        headers: getHeaders(),
+        headers: getAuthHeaders(),
     })
 
     if (!response.ok) {
@@ -85,7 +74,7 @@ export const getProductById = async (id: string): Promise<Product> => {
 export const updateProduct = async (id: string, productData: UpdateProductRequest): Promise<Product> => {
     const response = await fetch(`${API_BASE_URL}/admin/product/${id}`, {
         method: 'PUT',
-        headers: getHeaders(),
+        headers: getAuthHeaders(),
         body: JSON.stringify(productData),
     })
 
@@ -100,7 +89,7 @@ export const updateProduct = async (id: string, productData: UpdateProductReques
 export const deleteProduct = async (id: string): Promise<void> => {
     const response = await fetch(`${API_BASE_URL}/admin/product/${id}`, {
         method: 'DELETE',
-        headers: getHeaders(),
+        headers: getAuthHeaders(),
     })
 
     if (!response.ok) {
