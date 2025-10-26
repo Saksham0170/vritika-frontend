@@ -17,6 +17,8 @@ import { LoadingSpinner } from "@/components/ui/loading-components"
 import { getSubAdminById, updateSubAdmin } from "@/services/sub-admin"
 import { SubAdmin, UpdateSubAdminRequest } from "@/types/sub-admin"
 import { useToast } from "@/hooks/use-toast"
+import { subAdminFormSchema } from "@/lib/validators"
+import { z } from "zod"
 
 
 interface SubAdminEditDialogProps {
@@ -52,7 +54,15 @@ export function SubAdminEditDialog({ subAdminId, open, onClose, onSuccess }: Sub
     const [fieldErrors, setFieldErrors] = useState({
         name: "",
         phone: "",
-        email: ""
+        email: "",
+        gstNo: "",
+        contactPersonName: "",
+        address: "",
+        aadharCardNo: "",
+        panCardNo: "",
+        bankAccountNo: "",
+        ifscCode: "",
+        bankHolderName: ""
     })
 
     useEffect(() => {
@@ -62,7 +72,15 @@ export function SubAdminEditDialog({ subAdminId, open, onClose, onSuccess }: Sub
             setFieldErrors({
                 name: "",
                 phone: "",
-                email: ""
+                email: "",
+                gstNo: "",
+                contactPersonName: "",
+                address: "",
+                aadharCardNo: "",
+                panCardNo: "",
+                bankAccountNo: "",
+                ifscCode: "",
+                bankHolderName: ""
             })
             getSubAdminById(subAdminId)
                 .then((subAdminData) => {
@@ -97,43 +115,74 @@ export function SubAdminEditDialog({ subAdminId, open, onClose, onSuccess }: Sub
     }, [subAdminId, open])
 
     const validateForm = () => {
-        const errors = {
-            name: "",
-            phone: "",
-            email: ""
-        }
+        try {
+            // Create edit schema - password is not required for edit
+            const editSubAdminSchema = subAdminFormSchema.omit({ password: true })
 
-        if (!formData.name.trim()) {
-            errors.name = "Name is required"
-        }
+            // Validate using Zod schema
+            editSubAdminSchema.parse({
+                name: formData.name,
+                email: formData.email,
+                phone: formData.phone,
+                adminType: formData.adminType,
+                gstNo: formData.gstNo || undefined,
+                contactPersonName: formData.contactPersonName || undefined,
+                address: formData.address,
+                aadharCardNo: formData.aadharCardNo,
+                panCardNo: formData.panCardNo,
+                bankAccountNo: formData.bankAccountNo,
+                ifscCode: formData.ifscCode,
+                bankHolderName: formData.bankHolderName,
+            })
 
-        if (!formData.phone.trim()) {
-            errors.phone = "Phone is required"
-        }
-
-        if (!formData.email.trim()) {
-            errors.email = "Email is required"
-        } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-            errors.email = "Please enter a valid email address"
-        }
-
-        setFieldErrors(errors)
-
-        // Focus on first field with error
-        const hasErrors = Object.values(errors).some(error => error !== "")
-        if (hasErrors) {
-            setTimeout(() => {
-                if (errors.name) {
-                    document.getElementById("name")?.focus()
-                } else if (errors.phone) {
-                    document.getElementById("phone")?.focus()
-                } else if (errors.email) {
-                    document.getElementById("email")?.focus()
+            // Clear errors if validation passes
+            setFieldErrors({
+                name: "",
+                phone: "",
+                email: "",
+                gstNo: "",
+                contactPersonName: "",
+                address: "",
+                aadharCardNo: "",
+                panCardNo: "",
+                bankAccountNo: "",
+                ifscCode: "",
+                bankHolderName: ""
+            })
+            return true
+        } catch (error) {
+            if (error instanceof z.ZodError) {
+                const errors = {
+                    name: "",
+                    phone: "",
+                    email: "",
+                    gstNo: "",
+                    contactPersonName: "",
+                    address: "",
+                    aadharCardNo: "",
+                    panCardNo: "",
+                    bankAccountNo: "",
+                    ifscCode: "",
+                    bankHolderName: ""
                 }
-            }, 100)
-        }
 
-        return !hasErrors
+                error.issues.forEach((issue) => {
+                    const field = issue.path[0] as keyof typeof errors
+                    if (field in errors) {
+                        errors[field] = issue.message
+                    }
+                })
+
+                setFieldErrors(errors)
+
+                // Focus on first field with error
+                setTimeout(() => {
+                    const firstErrorField = error.issues[0]?.path[0] as string
+                    document.getElementById(firstErrorField)?.focus()
+                }, 100)
+            }
+            return false
+        }
     }
 
     const handleSave = async () => {
@@ -284,15 +333,24 @@ export function SubAdminEditDialog({ subAdminId, open, onClose, onSuccess }: Sub
                                 </div>
 
                                 <div className="md:col-span-2">
-                                    <Label htmlFor="address" className="mb-2">Address</Label>
+                                    <Label htmlFor="address" className="mb-2">Address *</Label>
                                     <Textarea
                                         id="address"
                                         rows={3}
                                         value={formData.address}
-                                        onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
+                                        onChange={(e) => {
+                                            setFormData(prev => ({ ...prev, address: e.target.value }))
+                                            if (fieldErrors.address) {
+                                                setFieldErrors(prev => ({ ...prev, address: "" }))
+                                            }
+                                        }}
                                         placeholder="Enter complete address"
                                         disabled={saving}
+                                        className={fieldErrors.address ? "border-red-500 focus:border-red-500" : ""}
                                     />
+                                    {fieldErrors.address && (
+                                        <p className="text-sm text-red-500 mt-1">{fieldErrors.address}</p>
+                                    )}
                                 </div>
                             </div>
                         </section>
@@ -309,20 +367,38 @@ export function SubAdminEditDialog({ subAdminId, open, onClose, onSuccess }: Sub
                                         <Input
                                             id="gstNo"
                                             value={formData.gstNo}
-                                            onChange={(e) => setFormData(prev => ({ ...prev, gstNo: e.target.value }))}
+                                            onChange={(e) => {
+                                                setFormData(prev => ({ ...prev, gstNo: e.target.value }))
+                                                if (fieldErrors.gstNo) {
+                                                    setFieldErrors(prev => ({ ...prev, gstNo: "" }))
+                                                }
+                                            }}
                                             placeholder="Enter GST number"
                                             disabled={saving}
+                                            className={fieldErrors.gstNo ? "border-red-500 focus:border-red-500" : ""}
                                         />
+                                        {fieldErrors.gstNo && (
+                                            <p className="text-sm text-red-500 mt-1">{fieldErrors.gstNo}</p>
+                                        )}
                                     </div>
                                     <div>
                                         <Label htmlFor="contactPersonName" className="mb-2">Contact Person Name</Label>
                                         <Input
                                             id="contactPersonName"
                                             value={formData.contactPersonName}
-                                            onChange={(e) => setFormData(prev => ({ ...prev, contactPersonName: e.target.value }))}
+                                            onChange={(e) => {
+                                                setFormData(prev => ({ ...prev, contactPersonName: e.target.value }))
+                                                if (fieldErrors.contactPersonName) {
+                                                    setFieldErrors(prev => ({ ...prev, contactPersonName: "" }))
+                                                }
+                                            }}
                                             placeholder="Enter contact person name"
                                             disabled={saving}
+                                            className={fieldErrors.contactPersonName ? "border-red-500 focus:border-red-500" : ""}
                                         />
+                                        {fieldErrors.contactPersonName && (
+                                            <p className="text-sm text-red-500 mt-1">{fieldErrors.contactPersonName}</p>
+                                        )}
                                     </div>
                                 </div>
                             </section>
@@ -335,24 +411,42 @@ export function SubAdminEditDialog({ subAdminId, open, onClose, onSuccess }: Sub
                             </h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <Label htmlFor="aadharCardNo" className="mb-2">Aadhaar Card Number</Label>
+                                    <Label htmlFor="aadharCardNo" className="mb-2">Aadhaar Card Number *</Label>
                                     <Input
                                         id="aadharCardNo"
                                         value={formData.aadharCardNo}
-                                        onChange={(e) => setFormData(prev => ({ ...prev, aadharCardNo: e.target.value }))}
+                                        onChange={(e) => {
+                                            setFormData(prev => ({ ...prev, aadharCardNo: e.target.value }))
+                                            if (fieldErrors.aadharCardNo) {
+                                                setFieldErrors(prev => ({ ...prev, aadharCardNo: "" }))
+                                            }
+                                        }}
                                         placeholder="Enter Aadhaar card number"
                                         disabled={saving}
+                                        className={fieldErrors.aadharCardNo ? "border-red-500 focus:border-red-500" : ""}
                                     />
+                                    {fieldErrors.aadharCardNo && (
+                                        <p className="text-sm text-red-500 mt-1">{fieldErrors.aadharCardNo}</p>
+                                    )}
                                 </div>
                                 <div>
-                                    <Label htmlFor="panCardNo" className="mb-2">PAN Card Number</Label>
+                                    <Label htmlFor="panCardNo" className="mb-2">PAN Card Number *</Label>
                                     <Input
                                         id="panCardNo"
                                         value={formData.panCardNo}
-                                        onChange={(e) => setFormData(prev => ({ ...prev, panCardNo: e.target.value }))}
+                                        onChange={(e) => {
+                                            setFormData(prev => ({ ...prev, panCardNo: e.target.value }))
+                                            if (fieldErrors.panCardNo) {
+                                                setFieldErrors(prev => ({ ...prev, panCardNo: "" }))
+                                            }
+                                        }}
                                         placeholder="Enter PAN card number"
                                         disabled={saving}
+                                        className={fieldErrors.panCardNo ? "border-red-500 focus:border-red-500" : ""}
                                     />
+                                    {fieldErrors.panCardNo && (
+                                        <p className="text-sm text-red-500 mt-1">{fieldErrors.panCardNo}</p>
+                                    )}
                                 </div>
                             </div>
                         </section>
@@ -364,36 +458,63 @@ export function SubAdminEditDialog({ subAdminId, open, onClose, onSuccess }: Sub
                             </h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <Label htmlFor="bankHolderName" className="mb-2">Account Holder Name</Label>
+                                    <Label htmlFor="bankHolderName" className="mb-2">Account Holder Name *</Label>
                                     <Input
                                         id="bankHolderName"
                                         value={formData.bankHolderName}
-                                        onChange={(e) => setFormData(prev => ({ ...prev, bankHolderName: e.target.value }))}
+                                        onChange={(e) => {
+                                            setFormData(prev => ({ ...prev, bankHolderName: e.target.value }))
+                                            if (fieldErrors.bankHolderName) {
+                                                setFieldErrors(prev => ({ ...prev, bankHolderName: "" }))
+                                            }
+                                        }}
                                         placeholder="Enter account holder name"
                                         disabled={saving}
+                                        className={fieldErrors.bankHolderName ? "border-red-500 focus:border-red-500" : ""}
                                     />
+                                    {fieldErrors.bankHolderName && (
+                                        <p className="text-sm text-red-500 mt-1">{fieldErrors.bankHolderName}</p>
+                                    )}
                                 </div>
 
                                 <div>
-                                    <Label htmlFor="bankAccountNo" className="mb-2">Account Number</Label>
+                                    <Label htmlFor="bankAccountNo" className="mb-2">Account Number *</Label>
                                     <Input
                                         id="bankAccountNo"
                                         value={formData.bankAccountNo}
-                                        onChange={(e) => setFormData(prev => ({ ...prev, bankAccountNo: e.target.value }))}
+                                        onChange={(e) => {
+                                            setFormData(prev => ({ ...prev, bankAccountNo: e.target.value }))
+                                            if (fieldErrors.bankAccountNo) {
+                                                setFieldErrors(prev => ({ ...prev, bankAccountNo: "" }))
+                                            }
+                                        }}
                                         placeholder="Enter account number"
                                         disabled={saving}
+                                        className={fieldErrors.bankAccountNo ? "border-red-500 focus:border-red-500" : ""}
                                     />
+                                    {fieldErrors.bankAccountNo && (
+                                        <p className="text-sm text-red-500 mt-1">{fieldErrors.bankAccountNo}</p>
+                                    )}
                                 </div>
 
                                 <div>
-                                    <Label htmlFor="ifscCode" className="mb-2">IFSC Code</Label>
+                                    <Label htmlFor="ifscCode" className="mb-2">IFSC Code *</Label>
                                     <Input
                                         id="ifscCode"
                                         value={formData.ifscCode}
-                                        onChange={(e) => setFormData(prev => ({ ...prev, ifscCode: e.target.value }))}
+                                        onChange={(e) => {
+                                            setFormData(prev => ({ ...prev, ifscCode: e.target.value }))
+                                            if (fieldErrors.ifscCode) {
+                                                setFieldErrors(prev => ({ ...prev, ifscCode: "" }))
+                                            }
+                                        }}
                                         placeholder="Enter IFSC code"
                                         disabled={saving}
+                                        className={fieldErrors.ifscCode ? "border-red-500 focus:border-red-500" : ""}
                                     />
+                                    {fieldErrors.ifscCode && (
+                                        <p className="text-sm text-red-500 mt-1">{fieldErrors.ifscCode}</p>
+                                    )}
                                 </div>
                             </div>
                         </section>

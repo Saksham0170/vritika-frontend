@@ -30,6 +30,20 @@ export const UPLOAD_ENDPOINTS = {
     PAN_FRONT: '/upload/sales-person-pan-front',
     CANCEL_CHEQUE: '/upload/sales-person-cancel-cheque',
 
+    // Admin uploads
+    ADMIN_AADHAR_FRONT: '/upload/admin-adhaar-front',
+    ADMIN_AADHAR_BACK: '/upload/admin-adhaar-back',
+    ADMIN_PAN_FRONT: '/upload/admin-pan-front',
+    ADMIN_PAN_BACK: '/upload/admin-pan-back',
+    ADMIN_PASSBOOK: '/upload/admin-passbook',
+
+    // Sub-Admin uploads
+    SUB_ADMIN_AADHAR_FRONT: '/upload/sub-admin-adhaar-front',
+    SUB_ADMIN_AADHAR_BACK: '/upload/sub-admin-adhaar-back',
+    SUB_ADMIN_PAN_FRONT: '/upload/sub-admin-pan-front',
+    SUB_ADMIN_PAN_BACK: '/upload/sub-admin-pan-back',
+    SUB_ADMIN_PASSBOOK: '/upload/sub-admin-passbook',
+
     // Product uploads
     PRODUCT_IMAGE: '/upload/product-image',
 } as const

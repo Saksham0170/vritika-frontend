@@ -115,15 +115,15 @@ export const subAdminFormSchema = adminFormSchema
 
 export const salespersonFormSchema = z.object({
   name: nameSchema,
-  email: emailSchema,
-  phone: phoneSchema,
+  email: emailSchema.optional(),
+  phoneNumber: phoneSchema,
   password: passwordSchema.optional(),
-  address: z.string().min(10, "Address must be at least 10 characters"),
-  aadharCardNumber: aadhaarSchema,
-  panCardNumber: panSchema,
-  bankAccountNumber: bankAccountSchema,
-  bankIfscCode: ifscSchema,
-  bankHolderName: nameSchema,
+  address: z.string().min(10, "Address must be at least 10 characters").optional(),
+  aadharCardNumber: aadhaarSchema.optional(),
+  panCardNumber: panSchema.optional(),
+  bankAccountNumber: bankAccountSchema.optional(),
+  bankIfscCode: ifscSchema.optional(),
+  bankAccountName: nameSchema.optional(),
 })
 
 export const brandFormSchema = z.object({

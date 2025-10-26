@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Dropzone, DropzoneEmptyState, DropzoneContent } from "@/components/ui/shadcn-io/dropzone"
 import { Button } from "@/components/ui/button"
 import { X, Upload, Eye, AlertCircle } from "lucide-react"
@@ -34,12 +34,18 @@ export function FileUpload({
     const [uploadProgress, setUploadProgress] = useState(0)
     const [files, setFiles] = useState<File[]>([])
     const [error, setError] = useState<string | null>(null)
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null)
 
     const handleDrop = async (acceptedFiles: File[]) => {
         if (acceptedFiles.length === 0) return
 
         const file = acceptedFiles[0]
         setFiles([file])
+
+        // Create preview URL for the dropped image
+        const preview = URL.createObjectURL(file)
+        setPreviewUrl(preview)
+
         setIsUploading(true)
         setUploadProgress(0)
         setError(null) // Clear any previous errors
@@ -67,6 +73,11 @@ export function FileUpload({
             setTimeout(() => {
                 setUploadProgress(0)
                 setIsUploading(false)
+                // Clean up the preview URL since we now have the uploaded URL
+                if (previewUrl) {
+                    URL.revokeObjectURL(previewUrl)
+                    setPreviewUrl(null)
+                }
             }, 1000)
 
         } catch (error) {
@@ -74,6 +85,11 @@ export function FileUpload({
             setIsUploading(false)
             setUploadProgress(0)
             setFiles([])
+            // Clean up preview URL on error
+            if (previewUrl) {
+                URL.revokeObjectURL(previewUrl)
+                setPreviewUrl(null)
+            }
             const errorMessage = error instanceof Error ? error.message : 'Upload failed. Please try again.'
             setError(errorMessage)
             toast({
@@ -89,6 +105,11 @@ export function FileUpload({
         onChange("")
         setUploadProgress(0)
         setError(null) // Clear error when removing file
+        // Clean up preview URL
+        if (previewUrl) {
+            URL.revokeObjectURL(previewUrl)
+            setPreviewUrl(null)
+        }
     }
 
     const openImagePreview = () => {
@@ -97,7 +118,17 @@ export function FileUpload({
         }
     }
 
+    // Cleanup effect to revoke object URLs
+    useEffect(() => {
+        return () => {
+            if (previewUrl) {
+                URL.revokeObjectURL(previewUrl)
+            }
+        }
+    }, [previewUrl])
+
     const hasUploadedImage = value && !isUploading
+    const hasPreviewImage = previewUrl && !hasUploadedImage
     const displayFiles = hasUploadedImage ? [] : files
 
     return (
@@ -119,6 +150,7 @@ export function FileUpload({
                     className={cn(
                         "min-h-[120px] transition-all duration-200",
                         hasUploadedImage && "border-green-200 bg-green-50/50 dark:border-green-800 dark:bg-green-950/50",
+                        hasPreviewImage && "border-blue-200 bg-blue-50/50 dark:border-blue-800 dark:bg-blue-950/50",
                         isUploading && "border-blue-200 bg-blue-50/50 dark:border-blue-800 dark:bg-blue-950/50",
                         error && "border-red-200 bg-red-50/50 dark:border-red-800 dark:bg-red-950/50"
                     )}
@@ -142,15 +174,29 @@ export function FileUpload({
                         </div>
                     ) : hasUploadedImage ? (
                         <div className="flex flex-col items-center space-y-3">
-                            <div className="flex size-8 items-center justify-center rounded-md bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-400">
-                                <Upload size={16} />
+                            <div className="relative w-full max-w-xs">
+                                <img
+                                    src={value}
+                                    alt="Uploaded image"
+                                    className="w-full h-32 object-cover rounded-lg border"
+                                />
+                            </div>
+                        </div>
+                    ) : hasPreviewImage ? (
+                        <div className="flex flex-col items-center space-y-3">
+                            <div className="relative w-full max-w-xs">
+                                <img
+                                    src={previewUrl!}
+                                    alt="Image preview"
+                                    className="w-full h-32 object-cover rounded-lg border"
+                                />
                             </div>
                             <div className="text-center">
-                                <p className="font-medium text-sm text-green-700 dark:text-green-300">
-                                    Image uploaded successfully
+                                <p className="font-medium text-sm text-blue-700 dark:text-blue-300">
+                                    Image ready to upload
                                 </p>
-                                <p className="text-xs text-green-600 dark:text-green-400">
-                                    Click to replace or use buttons below
+                                <p className="text-xs text-blue-600 dark:text-blue-400">
+                                    Click to replace or wait for upload to complete
                                 </p>
                             </div>
                         </div>
@@ -205,24 +251,29 @@ export function FileUpload({
                 </div>
             )}
 
-            {hasUploadedImage && (
+            {(hasUploadedImage || hasPreviewImage) && (
                 <div className="flex gap-2">
-                    <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={openImagePreview}
-                        className="flex-1"
-                    >
-                        <Eye className="h-4 w-4 mr-2" />
-                        Preview
-                    </Button>
+                    {hasUploadedImage && (
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={openImagePreview}
+                            className="flex-1"
+                        >
+                            <Eye className="h-4 w-4 mr-2" />
+                            Preview
+                        </Button>
+                    )}
                     <Button
                         type="button"
                         variant="outline"
                         size="sm"
                         onClick={handleRemove}
-                        className="flex-1 text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-950"
+                        className={cn(
+                            "text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-950",
+                            hasUploadedImage ? "flex-1" : "w-full"
+                        )}
                     >
                         <X className="h-4 w-4 mr-2" />
                         Remove

@@ -14,9 +14,13 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { LoadingSpinner } from "@/components/ui/loading-components"
+import { FileUpload } from "@/components/FileUpload"
 import { getAdminById, updateAdmin } from "@/services/admin"
 import { Admin, UpdateAdminRequest } from "@/types/admin"
 import { useToast } from "@/hooks/use-toast"
+import { adminFormSchema } from "@/lib/validators"
+import { UPLOAD_ENDPOINTS } from "@/services/upload"
+import { z } from "zod"
 
 
 interface AdminEditDialogProps {
@@ -42,9 +46,11 @@ export function AdminEditDialog({ adminId, open, onClose, onSuccess }: AdminEdit
         contactPersonName: "",
         address: "",
         aadharCardNo: "",
-        aadharCardImage: ["", ""] as string[], // Front and Back URLs
+        aadharCardFront: "",
+        aadharCardBack: "",
         panCardNo: "",
-        panCardImage: ["", ""] as string[], // Front and Back URLs
+        panCardFront: "",
+        panCardBack: "",
         bankAccountNo: "",
         ifscCode: "",
         bankHolderName: "",
@@ -54,7 +60,15 @@ export function AdminEditDialog({ adminId, open, onClose, onSuccess }: AdminEdit
     const [fieldErrors, setFieldErrors] = useState({
         name: "",
         phone: "",
-        email: ""
+        email: "",
+        gstNo: "",
+        contactPersonName: "",
+        address: "",
+        aadharCardNo: "",
+        panCardNo: "",
+        bankAccountNo: "",
+        ifscCode: "",
+        bankHolderName: ""
     })
 
     useEffect(() => {
@@ -64,7 +78,15 @@ export function AdminEditDialog({ adminId, open, onClose, onSuccess }: AdminEdit
             setFieldErrors({
                 name: "",
                 phone: "",
-                email: ""
+                email: "",
+                gstNo: "",
+                contactPersonName: "",
+                address: "",
+                aadharCardNo: "",
+                panCardNo: "",
+                bankAccountNo: "",
+                ifscCode: "",
+                bankHolderName: ""
             })
             getAdminById(adminId)
                 .then((adminData) => {
@@ -78,15 +100,11 @@ export function AdminEditDialog({ adminId, open, onClose, onSuccess }: AdminEdit
                         contactPersonName: adminData.contactPersonName || "",
                         address: adminData.address || "",
                         aadharCardNo: adminData.aadharCardNo || "",
-                        aadharCardImage: [
-                            adminData.aadharCardImage?.[0] || "",
-                            adminData.aadharCardImage?.[1] || ""
-                        ],
+                        aadharCardFront: adminData.aadharCardImage?.[0] || "",
+                        aadharCardBack: adminData.aadharCardImage?.[1] || "",
                         panCardNo: adminData.panCardNo || "",
-                        panCardImage: [
-                            adminData.panCardImage?.[0] || "",
-                            adminData.panCardImage?.[1] || ""
-                        ],
+                        panCardFront: adminData.panCardImage?.[0] || "",
+                        panCardBack: adminData.panCardImage?.[1] || "",
                         bankAccountNo: adminData.bankAccountNo || "",
                         ifscCode: adminData.ifscCode || "",
                         bankHolderName: adminData.bankHolderName || "",
@@ -107,52 +125,77 @@ export function AdminEditDialog({ adminId, open, onClose, onSuccess }: AdminEdit
     }, [adminId, open])
 
     const validateForm = () => {
-        const errors = {
-            name: "",
-            phone: "",
-            email: ""
-        }
+        try {
+            // Create edit schema - password is not required for edit
+            const editAdminSchema = adminFormSchema.omit({ password: true })
 
-        if (!formData.name.trim()) {
-            errors.name = "Name is required"
-        }
+            // Validate using Zod schema
+            editAdminSchema.parse({
+                name: formData.name,
+                email: formData.email,
+                phone: formData.phone,
+                adminType: formData.adminType,
+                gstNo: formData.gstNo || undefined,
+                contactPersonName: formData.contactPersonName || undefined,
+                address: formData.address,
+                aadharCardNo: formData.aadharCardNo,
+                panCardNo: formData.panCardNo,
+                bankAccountNo: formData.bankAccountNo,
+                ifscCode: formData.ifscCode,
+                bankHolderName: formData.bankHolderName,
+            })
 
-        if (!formData.phone.trim()) {
-            errors.phone = "Phone is required"
-        }
-
-        if (!formData.email.trim()) {
-            errors.email = "Email is required"
-        } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-            errors.email = "Please enter a valid email address"
-        }
-
-        setFieldErrors(errors)
-
-        // Focus on first field with error
-        const hasErrors = Object.values(errors).some(error => error !== "")
-        if (hasErrors) {
-            setTimeout(() => {
-                if (errors.name) {
-                    document.getElementById("name")?.focus()
-                } else if (errors.phone) {
-                    document.getElementById("phone")?.focus()
-                } else if (errors.email) {
-                    document.getElementById("email")?.focus()
+            // Clear errors if validation passes
+            setFieldErrors({
+                name: "",
+                phone: "",
+                email: "",
+                gstNo: "",
+                contactPersonName: "",
+                address: "",
+                aadharCardNo: "",
+                panCardNo: "",
+                bankAccountNo: "",
+                ifscCode: "",
+                bankHolderName: ""
+            })
+            return true
+        } catch (error) {
+            if (error instanceof z.ZodError) {
+                const errors = {
+                    name: "",
+                    phone: "",
+                    email: "",
+                    gstNo: "",
+                    contactPersonName: "",
+                    address: "",
+                    aadharCardNo: "",
+                    panCardNo: "",
+                    bankAccountNo: "",
+                    ifscCode: "",
+                    bankHolderName: ""
                 }
-            }, 100)
+
+                error.issues.forEach((issue) => {
+                    const field = issue.path[0] as keyof typeof errors
+                    if (field in errors) {
+                        errors[field] = issue.message
+                    }
+                })
+
+                setFieldErrors(errors)
+
+                // Focus on first field with error
+                setTimeout(() => {
+                    const firstErrorField = error.issues[0]?.path[0] as string
+                    document.getElementById(firstErrorField)?.focus()
+                }, 100)
+            }
+            return false
         }
-
-        return !hasErrors
     }
 
-    // URL input handling functions
-    const handleImageUrlChange = (field: 'aadharCardImage' | 'panCardImage', index: number, url: string) => {
-        setFormData(prev => ({
-            ...prev,
-            [field]: prev[field].map((item, i) => i === index ? url : item)
-        }))
-    }
+
 
     const handleSave = async () => {
         if (!adminId || !admin) return
@@ -174,13 +217,26 @@ export function AdminEditDialog({ adminId, open, onClose, onSuccess }: AdminEdit
             if (formData.contactPersonName !== admin.contactPersonName) updateData.contactPersonName = formData.contactPersonName
             if (formData.address !== admin.address) updateData.address = formData.address
             if (formData.aadharCardNo !== admin.aadharCardNo) updateData.aadharCardNo = formData.aadharCardNo
-            const aadharImages = formData.aadharCardImage.filter(url => url.trim() !== '')
+
+            // Handle Aadhaar images
+            const aadharImages: string[] = []
+            if (formData.aadharCardFront?.trim()) aadharImages.push(formData.aadharCardFront.trim())
+            if (formData.aadharCardBack?.trim()) aadharImages.push(formData.aadharCardBack.trim())
             const currentAadharImages = (admin.aadharCardImage || []).filter(url => url.trim() !== '')
-            if (JSON.stringify(aadharImages) !== JSON.stringify(currentAadharImages)) updateData.aadharCardImage = aadharImages
+            if (JSON.stringify(aadharImages) !== JSON.stringify(currentAadharImages)) {
+                updateData.aadharCardImage = aadharImages
+            }
+
             if (formData.panCardNo !== admin.panCardNo) updateData.panCardNo = formData.panCardNo
-            const panImages = formData.panCardImage.filter(url => url.trim() !== '')
+
+            // Handle PAN images
+            const panImages: string[] = []
+            if (formData.panCardFront?.trim()) panImages.push(formData.panCardFront.trim())
+            if (formData.panCardBack?.trim()) panImages.push(formData.panCardBack.trim())
             const currentPanImages = (admin.panCardImage || []).filter(url => url.trim() !== '')
-            if (JSON.stringify(panImages) !== JSON.stringify(currentPanImages)) updateData.panCardImage = panImages
+            if (JSON.stringify(panImages) !== JSON.stringify(currentPanImages)) {
+                updateData.panCardImage = panImages
+            }
             if (formData.bankAccountNo !== admin.bankAccountNo) updateData.bankAccountNo = formData.bankAccountNo
             if (formData.ifscCode !== admin.ifscCode) updateData.ifscCode = formData.ifscCode
             if (formData.bankHolderName !== admin.bankHolderName) updateData.bankHolderName = formData.bankHolderName
@@ -305,9 +361,19 @@ export function AdminEditDialog({ adminId, open, onClose, onSuccess }: AdminEdit
                                         id="address"
                                         rows={3}
                                         value={formData.address}
-                                        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setFormData(prev => ({ ...prev, address: e.target.value }))}
+                                        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
+                                            setFormData(prev => ({ ...prev, address: e.target.value }))
+                                            if (fieldErrors.address) {
+                                                setFieldErrors(prev => ({ ...prev, address: "" }))
+                                            }
+                                        }}
                                         placeholder="Enter complete address"
+                                        className={fieldErrors.address ? "border-red-500 focus:border-red-500" : ""}
+                                        disabled={saving}
                                     />
+                                    {fieldErrors.address && (
+                                        <p className="text-sm text-red-500 mt-1">{fieldErrors.address}</p>
+                                    )}
                                 </div>
                             </div>
                         </section>
@@ -324,18 +390,38 @@ export function AdminEditDialog({ adminId, open, onClose, onSuccess }: AdminEdit
                                         <Input
                                             id="gstNo"
                                             value={formData.gstNo}
-                                            onChange={(e) => setFormData(prev => ({ ...prev, gstNo: e.target.value }))}
+                                            onChange={(e) => {
+                                                setFormData(prev => ({ ...prev, gstNo: e.target.value }))
+                                                if (fieldErrors.gstNo) {
+                                                    setFieldErrors(prev => ({ ...prev, gstNo: "" }))
+                                                }
+                                            }}
                                             placeholder="Enter GST number"
+                                            className={fieldErrors.gstNo ? "border-red-500 focus:border-red-500" : ""}
+                                            disabled={saving}
                                         />
+                                        {fieldErrors.gstNo && (
+                                            <p className="text-sm text-red-500 mt-1">{fieldErrors.gstNo}</p>
+                                        )}
                                     </div>
                                     <div>
                                         <Label htmlFor="contactPersonName" className="mb-2">Contact Person Name</Label>
                                         <Input
                                             id="contactPersonName"
                                             value={formData.contactPersonName}
-                                            onChange={(e) => setFormData(prev => ({ ...prev, contactPersonName: e.target.value }))}
+                                            onChange={(e) => {
+                                                setFormData(prev => ({ ...prev, contactPersonName: e.target.value }))
+                                                if (fieldErrors.contactPersonName) {
+                                                    setFieldErrors(prev => ({ ...prev, contactPersonName: "" }))
+                                                }
+                                            }}
                                             placeholder="Enter contact person name"
+                                            className={fieldErrors.contactPersonName ? "border-red-500 focus:border-red-500" : ""}
+                                            disabled={saving}
                                         />
+                                        {fieldErrors.contactPersonName && (
+                                            <p className="text-sm text-red-500 mt-1">{fieldErrors.contactPersonName}</p>
+                                        )}
                                     </div>
                                 </div>
                             </section>
@@ -352,18 +438,38 @@ export function AdminEditDialog({ adminId, open, onClose, onSuccess }: AdminEdit
                                     <Input
                                         id="aadharCardNo"
                                         value={formData.aadharCardNo}
-                                        onChange={(e) => setFormData(prev => ({ ...prev, aadharCardNo: e.target.value }))}
+                                        onChange={(e) => {
+                                            setFormData(prev => ({ ...prev, aadharCardNo: e.target.value }))
+                                            if (fieldErrors.aadharCardNo) {
+                                                setFieldErrors(prev => ({ ...prev, aadharCardNo: "" }))
+                                            }
+                                        }}
                                         placeholder="Enter Aadhaar card number"
+                                        className={fieldErrors.aadharCardNo ? "border-red-500 focus:border-red-500" : ""}
+                                        disabled={saving}
                                     />
+                                    {fieldErrors.aadharCardNo && (
+                                        <p className="text-sm text-red-500 mt-1">{fieldErrors.aadharCardNo}</p>
+                                    )}
                                 </div>
                                 <div>
                                     <Label htmlFor="panCardNo" className="mb-2">PAN Card Number</Label>
                                     <Input
                                         id="panCardNo"
                                         value={formData.panCardNo}
-                                        onChange={(e) => setFormData(prev => ({ ...prev, panCardNo: e.target.value }))}
+                                        onChange={(e) => {
+                                            setFormData(prev => ({ ...prev, panCardNo: e.target.value }))
+                                            if (fieldErrors.panCardNo) {
+                                                setFieldErrors(prev => ({ ...prev, panCardNo: "" }))
+                                            }
+                                        }}
                                         placeholder="Enter PAN card number"
+                                        className={fieldErrors.panCardNo ? "border-red-500 focus:border-red-500" : ""}
+                                        disabled={saving}
                                     />
+                                    {fieldErrors.panCardNo && (
+                                        <p className="text-sm text-red-500 mt-1">{fieldErrors.panCardNo}</p>
+                                    )}
                                 </div>
 
                                 {/* Aadhaar Card Images */}
@@ -371,46 +477,22 @@ export function AdminEditDialog({ adminId, open, onClose, onSuccess }: AdminEdit
                                     <div className="space-y-4">
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div>
-                                                <Label htmlFor="aadharFront" className="mb-2">Aadhaar Front Side</Label>
-                                                <Input
-                                                    id="aadharFront"
-                                                    value={formData.aadharCardImage[0]}
-                                                    onChange={(e) => handleImageUrlChange('aadharCardImage', 0, e.target.value)}
-                                                    placeholder="Enter Aadhaar front image URL"
+                                                <FileUpload
+                                                    label="Aadhaar Card Front"
+                                                    value={formData.aadharCardFront}
+                                                    onChange={(url) => setFormData(prev => ({ ...prev, aadharCardFront: url }))}
+                                                    endpoint={UPLOAD_ENDPOINTS.ADMIN_AADHAR_FRONT}
+                                                    disabled={saving}
                                                 />
-                                                {formData.aadharCardImage[0] && (
-                                                    <div className="mt-2">
-                                                        <img
-                                                            src={formData.aadharCardImage[0]}
-                                                            alt="Aadhaar Front"
-                                                            className="w-32 h-20 object-cover rounded border"
-                                                            onError={(e) => {
-                                                                e.currentTarget.style.display = 'none'
-                                                            }}
-                                                        />
-                                                    </div>
-                                                )}
                                             </div>
                                             <div>
-                                                <Label htmlFor="aadharBack" className="mb-2">Aadhaar Back Side</Label>
-                                                <Input
-                                                    id="aadharBack"
-                                                    value={formData.aadharCardImage[1]}
-                                                    onChange={(e) => handleImageUrlChange('aadharCardImage', 1, e.target.value)}
-                                                    placeholder="Enter Aadhaar back image URL"
+                                                <FileUpload
+                                                    label="Aadhaar Card Back"
+                                                    value={formData.aadharCardBack}
+                                                    onChange={(url) => setFormData(prev => ({ ...prev, aadharCardBack: url }))}
+                                                    endpoint={UPLOAD_ENDPOINTS.ADMIN_AADHAR_BACK}
+                                                    disabled={saving}
                                                 />
-                                                {formData.aadharCardImage[1] && (
-                                                    <div className="mt-2">
-                                                        <img
-                                                            src={formData.aadharCardImage[1]}
-                                                            alt="Aadhaar Back"
-                                                            className="w-32 h-20 object-cover rounded border"
-                                                            onError={(e) => {
-                                                                e.currentTarget.style.display = 'none'
-                                                            }}
-                                                        />
-                                                    </div>
-                                                )}
                                             </div>
                                         </div>
                                     </div>
@@ -421,46 +503,22 @@ export function AdminEditDialog({ adminId, open, onClose, onSuccess }: AdminEdit
                                     <div className="space-y-4">
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div>
-                                                <Label htmlFor="panFront" className="mb-2">Pan Front Side</Label>
-                                                <Input
-                                                    id="panFront"
-                                                    value={formData.panCardImage[0]}
-                                                    onChange={(e) => handleImageUrlChange('panCardImage', 0, e.target.value)}
-                                                    placeholder="Enter PAN front image URL"
+                                                <FileUpload
+                                                    label="PAN Card Front"
+                                                    value={formData.panCardFront}
+                                                    onChange={(url) => setFormData(prev => ({ ...prev, panCardFront: url }))}
+                                                    endpoint={UPLOAD_ENDPOINTS.ADMIN_PAN_FRONT}
+                                                    disabled={saving}
                                                 />
-                                                {formData.panCardImage[0] && (
-                                                    <div className="mt-2">
-                                                        <img
-                                                            src={formData.panCardImage[0]}
-                                                            alt="PAN Front"
-                                                            className="w-32 h-20 object-cover rounded border"
-                                                            onError={(e) => {
-                                                                e.currentTarget.style.display = 'none'
-                                                            }}
-                                                        />
-                                                    </div>
-                                                )}
                                             </div>
                                             <div>
-                                                <Label htmlFor="panBack" className="mb-2">Pan Back Side</Label>
-                                                <Input
-                                                    id="panBack"
-                                                    value={formData.panCardImage[1]}
-                                                    onChange={(e) => handleImageUrlChange('panCardImage', 1, e.target.value)}
-                                                    placeholder="Enter PAN back image URL"
+                                                <FileUpload
+                                                    label="PAN Card Back"
+                                                    value={formData.panCardBack}
+                                                    onChange={(url) => setFormData(prev => ({ ...prev, panCardBack: url }))}
+                                                    endpoint={UPLOAD_ENDPOINTS.ADMIN_PAN_BACK}
+                                                    disabled={saving}
                                                 />
-                                                {formData.panCardImage[1] && (
-                                                    <div className="mt-2">
-                                                        <img
-                                                            src={formData.panCardImage[1]}
-                                                            alt="PAN Back"
-                                                            className="w-32 h-20 object-cover rounded border"
-                                                            onError={(e) => {
-                                                                e.currentTarget.style.display = 'none'
-                                                            }}
-                                                        />
-                                                    </div>
-                                                )}
                                             </div>
                                         </div>
                                     </div>
@@ -479,9 +537,19 @@ export function AdminEditDialog({ adminId, open, onClose, onSuccess }: AdminEdit
                                     <Input
                                         id="bankHolderName"
                                         value={formData.bankHolderName}
-                                        onChange={(e) => setFormData(prev => ({ ...prev, bankHolderName: e.target.value }))}
+                                        onChange={(e) => {
+                                            setFormData(prev => ({ ...prev, bankHolderName: e.target.value }))
+                                            if (fieldErrors.bankHolderName) {
+                                                setFieldErrors(prev => ({ ...prev, bankHolderName: "" }))
+                                            }
+                                        }}
                                         placeholder="Enter account holder name"
+                                        className={fieldErrors.bankHolderName ? "border-red-500 focus:border-red-500" : ""}
+                                        disabled={saving}
                                     />
+                                    {fieldErrors.bankHolderName && (
+                                        <p className="text-sm text-red-500 mt-1">{fieldErrors.bankHolderName}</p>
+                                    )}
                                 </div>
 
                                 <div>
@@ -489,9 +557,19 @@ export function AdminEditDialog({ adminId, open, onClose, onSuccess }: AdminEdit
                                     <Input
                                         id="bankAccountNo"
                                         value={formData.bankAccountNo}
-                                        onChange={(e) => setFormData(prev => ({ ...prev, bankAccountNo: e.target.value }))}
+                                        onChange={(e) => {
+                                            setFormData(prev => ({ ...prev, bankAccountNo: e.target.value }))
+                                            if (fieldErrors.bankAccountNo) {
+                                                setFieldErrors(prev => ({ ...prev, bankAccountNo: "" }))
+                                            }
+                                        }}
                                         placeholder="Enter account number"
+                                        className={fieldErrors.bankAccountNo ? "border-red-500 focus:border-red-500" : ""}
+                                        disabled={saving}
                                     />
+                                    {fieldErrors.bankAccountNo && (
+                                        <p className="text-sm text-red-500 mt-1">{fieldErrors.bankAccountNo}</p>
+                                    )}
                                 </div>
 
                                 <div>
@@ -499,8 +577,28 @@ export function AdminEditDialog({ adminId, open, onClose, onSuccess }: AdminEdit
                                     <Input
                                         id="ifscCode"
                                         value={formData.ifscCode}
-                                        onChange={(e) => setFormData(prev => ({ ...prev, ifscCode: e.target.value }))}
+                                        onChange={(e) => {
+                                            setFormData(prev => ({ ...prev, ifscCode: e.target.value }))
+                                            if (fieldErrors.ifscCode) {
+                                                setFieldErrors(prev => ({ ...prev, ifscCode: "" }))
+                                            }
+                                        }}
                                         placeholder="Enter IFSC code"
+                                        className={fieldErrors.ifscCode ? "border-red-500 focus:border-red-500" : ""}
+                                        disabled={saving}
+                                    />
+                                    {fieldErrors.ifscCode && (
+                                        <p className="text-sm text-red-500 mt-1">{fieldErrors.ifscCode}</p>
+                                    )}
+                                </div>
+
+                                <div className="md:col-span-2">
+                                    <FileUpload
+                                        label="Bank Passbook/Statement"
+                                        value={formData.passbookImage}
+                                        onChange={(url) => setFormData(prev => ({ ...prev, passbookImage: url }))}
+                                        endpoint={UPLOAD_ENDPOINTS.ADMIN_PASSBOOK}
+                                        disabled={saving}
                                     />
                                 </div>
                             </div>

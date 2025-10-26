@@ -24,6 +24,8 @@ import { createSalesperson } from "@/services/salesperson"
 import { CreateSalespersonRequest } from "@/types/salesperson"
 import { UPLOAD_ENDPOINTS } from "@/services/upload"
 import { useToast } from "@/hooks/use-toast"
+import { salespersonFormSchema } from "@/lib/validators"
+import { z } from "zod"
 
 
 interface SalespersonAddDialogProps {
@@ -98,50 +100,64 @@ export function SalespersonAddDialog({ open, onClose, onSuccess }: SalespersonAd
     }
 
     const validateForm = () => {
-        const errors = {
-            name: "",
-            phoneNumber: "",
-            email: "",
-            address: "",
-            aadharCardNumber: "",
-            panCardNumber: "",
-            bankAccountNumber: "",
-            bankIfscCode: "",
-            bankAccountName: ""
-        }
+        try {
+            // Validate using Zod schema
+            salespersonFormSchema.parse({
+                name: formData.name,
+                email: formData.email || undefined,
+                phoneNumber: formData.phoneNumber,
+                address: formData.address || undefined,
+                aadharCardNumber: formData.aadharCardNumber || undefined,
+                panCardNumber: formData.panCardNumber || undefined,
+                bankAccountNumber: formData.bankAccountNumber || undefined,
+                bankIfscCode: formData.bankIfscCode || undefined,
+                bankAccountName: formData.bankAccountName || undefined,
+            })
 
-        if (!formData.name.trim()) {
-            errors.name = "Name is required"
-        }
-
-        if (!formData.phoneNumber.trim()) {
-            errors.phoneNumber = "Phone number is required"
-        }
-
-        // Optional email validation - only validate format if email is provided
-        if (formData.email.trim() && !/\S+@\S+\.\S+/.test(formData.email)) {
-            errors.email = "Please enter a valid email address"
-        }
-
-        // All other fields are optional - no validation needed
-
-        setFieldErrors(errors)
-
-        // Focus on first field with error
-        const hasErrors = Object.values(errors).some(error => error !== "")
-        if (hasErrors) {
-            setTimeout(() => {
-                if (errors.name) {
-                    document.getElementById("name")?.focus()
-                } else if (errors.phoneNumber) {
-                    document.getElementById("phoneNumber")?.focus()
-                } else if (errors.email) {
-                    document.getElementById("email")?.focus()
+            // Clear errors if validation passes
+            setFieldErrors({
+                name: "",
+                phoneNumber: "",
+                email: "",
+                address: "",
+                aadharCardNumber: "",
+                panCardNumber: "",
+                bankAccountNumber: "",
+                bankIfscCode: "",
+                bankAccountName: ""
+            })
+            return true
+        } catch (error) {
+            if (error instanceof z.ZodError) {
+                const errors = {
+                    name: "",
+                    phoneNumber: "",
+                    email: "",
+                    address: "",
+                    aadharCardNumber: "",
+                    panCardNumber: "",
+                    bankAccountNumber: "",
+                    bankIfscCode: "",
+                    bankAccountName: ""
                 }
-            }, 100)
-        }
 
-        return !hasErrors
+                error.issues.forEach((issue) => {
+                    const field = issue.path[0] as keyof typeof errors
+                    if (field in errors) {
+                        errors[field] = issue.message
+                    }
+                })
+
+                setFieldErrors(errors)
+
+                // Focus on first field with error
+                setTimeout(() => {
+                    const firstErrorField = error.issues[0]?.path[0] as string
+                    document.getElementById(firstErrorField)?.focus()
+                }, 100)
+            }
+            return false
+        }
     }
 
     const handleSave = async () => {

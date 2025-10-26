@@ -19,10 +19,12 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
+import { FileUpload } from "@/components/FileUpload"
 import { createAdmin } from "@/services/admin"
 import { CreateAdminRequest } from "@/types/admin"
 import { useToast } from "@/hooks/use-toast"
 import { adminFormSchema, type AdminFormData } from "@/lib/validators"
+import { UPLOAD_ENDPOINTS } from "@/services/upload"
 import { z } from "zod"
 
 
@@ -45,9 +47,11 @@ export function AdminAddDialog({ open, onClose, onSuccess }: AdminAddDialogProps
         contactPersonName: "",
         address: "",
         aadharCardNo: "",
-        aadharCardImage: ["", ""] as string[], // Front and Back URLs
+        aadharCardFront: "",
+        aadharCardBack: "",
         panCardNo: "",
-        panCardImage: ["", ""] as string[], // Front and Back URLs
+        panCardFront: "",
+        panCardBack: "",
         bankAccountNo: "",
         ifscCode: "",
         bankHolderName: "",
@@ -80,9 +84,11 @@ export function AdminAddDialog({ open, onClose, onSuccess }: AdminAddDialogProps
             contactPersonName: "",
             address: "",
             aadharCardNo: "",
-            aadharCardImage: ["", ""],
+            aadharCardFront: "",
+            aadharCardBack: "",
             panCardNo: "",
-            panCardImage: ["", ""],
+            panCardFront: "",
+            panCardBack: "",
             bankAccountNo: "",
             ifscCode: "",
             bankHolderName: "",
@@ -176,13 +182,7 @@ export function AdminAddDialog({ open, onClose, onSuccess }: AdminAddDialogProps
         }
     }
 
-    // URL input handling functions
-    const handleImageUrlChange = (field: 'aadharCardImage' | 'panCardImage', index: number, url: string) => {
-        setFormData(prev => ({
-            ...prev,
-            [field]: prev[field].map((item, i) => i === index ? url : item)
-        }))
-    }
+
 
     const handleSave = async () => {
         if (!validateForm()) {
@@ -203,11 +203,21 @@ export function AdminAddDialog({ open, onClose, onSuccess }: AdminAddDialogProps
             if (formData.contactPersonName) createData.contactPersonName = formData.contactPersonName
             if (formData.address) createData.address = formData.address
             if (formData.aadharCardNo) createData.aadharCardNo = formData.aadharCardNo
-            const aadharImages = formData.aadharCardImage.filter(url => url.trim() !== '')
+
+            // Handle Aadhaar images
+            const aadharImages: string[] = []
+            if (formData.aadharCardFront?.trim()) aadharImages.push(formData.aadharCardFront.trim())
+            if (formData.aadharCardBack?.trim()) aadharImages.push(formData.aadharCardBack.trim())
             if (aadharImages.length > 0) createData.aadharCardImage = aadharImages
+
             if (formData.panCardNo) createData.panCardNo = formData.panCardNo
-            const panImages = formData.panCardImage.filter(url => url.trim() !== '')
+
+            // Handle PAN images
+            const panImages: string[] = []
+            if (formData.panCardFront?.trim()) panImages.push(formData.panCardFront.trim())
+            if (formData.panCardBack?.trim()) panImages.push(formData.panCardBack.trim())
             if (panImages.length > 0) createData.panCardImage = panImages
+
             if (formData.bankAccountNo) createData.bankAccountNo = formData.bankAccountNo
             if (formData.ifscCode) createData.ifscCode = formData.ifscCode
             if (formData.bankHolderName) createData.bankHolderName = formData.bankHolderName
@@ -472,50 +482,24 @@ export function AdminAddDialog({ open, onClose, onSuccess }: AdminAddDialogProps
 
                             {/* Aadhaar Card Images */}
                             <div className="md:col-span-2">
-                                <div className="space-y-4">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div>
-                                            <Label htmlFor="aadharFront" className="mb-2">Aadhaar Front Side</Label>
-                                            <Input
-                                                id="aadharFront"
-                                                value={formData.aadharCardImage[0]}
-                                                onChange={(e) => handleImageUrlChange('aadharCardImage', 0, e.target.value)}
-                                                placeholder="Enter Aadhaar front image URL"
-                                            />
-                                            {formData.aadharCardImage[0] && (
-                                                <div className="mt-2">
-                                                    <img
-                                                        src={formData.aadharCardImage[0]}
-                                                        alt="Aadhaar Front"
-                                                        className="w-32 h-20 object-cover rounded border"
-                                                        onError={(e) => {
-                                                            e.currentTarget.style.display = 'none'
-                                                        }}
-                                                    />
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div>
-                                            <Label htmlFor="aadharBack" className="mb-2">Aadhaar Back Side</Label>
-                                            <Input
-                                                id="aadharBack"
-                                                value={formData.aadharCardImage[1]}
-                                                onChange={(e) => handleImageUrlChange('aadharCardImage', 1, e.target.value)}
-                                                placeholder="Enter Aadhaar back image URL"
-                                            />
-                                            {formData.aadharCardImage[1] && (
-                                                <div className="mt-2">
-                                                    <img
-                                                        src={formData.aadharCardImage[1]}
-                                                        alt="Aadhaar Back"
-                                                        className="w-32 h-20 object-cover rounded border"
-                                                        onError={(e) => {
-                                                            e.currentTarget.style.display = 'none'
-                                                        }}
-                                                    />
-                                                </div>
-                                            )}
-                                        </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <FileUpload
+                                            label="Aadhaar Card Front"
+                                            value={formData.aadharCardFront}
+                                            onChange={(url) => setFormData(p => ({ ...p, aadharCardFront: url }))}
+                                            endpoint={UPLOAD_ENDPOINTS.ADMIN_AADHAR_FRONT}
+                                            disabled={saving}
+                                        />
+                                    </div>
+                                    <div>
+                                        <FileUpload
+                                            label="Aadhaar Card Back"
+                                            value={formData.aadharCardBack}
+                                            onChange={(url) => setFormData(p => ({ ...p, aadharCardBack: url }))}
+                                            endpoint={UPLOAD_ENDPOINTS.ADMIN_AADHAR_BACK}
+                                            disabled={saving}
+                                        />
                                     </div>
                                 </div>
                             </div>
@@ -523,48 +507,24 @@ export function AdminAddDialog({ open, onClose, onSuccess }: AdminAddDialogProps
                             {/* PAN Card Images */}
                             <div className="md:col-span-2">
                                 <div className="space-y-4">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div>
-                                            <Label htmlFor="panFront" className="mb-2">Pan Front Side</Label>
-                                            <Input
-                                                id="panFront"
-                                                value={formData.panCardImage[0]}
-                                                onChange={(e) => handleImageUrlChange('panCardImage', 0, e.target.value)}
-                                                placeholder="Enter PAN front image URL"
+                                            <FileUpload
+                                                label="PAN Card Front"
+                                                value={formData.panCardFront}
+                                                onChange={(url) => setFormData(p => ({ ...p, panCardFront: url }))}
+                                                endpoint={UPLOAD_ENDPOINTS.ADMIN_PAN_FRONT}
+                                                disabled={saving}
                                             />
-                                            {formData.panCardImage[0] && (
-                                                <div className="mt-2">
-                                                    <img
-                                                        src={formData.panCardImage[0]}
-                                                        alt="PAN Front"
-                                                        className="w-32 h-20 object-cover rounded border"
-                                                        onError={(e) => {
-                                                            e.currentTarget.style.display = 'none'
-                                                        }}
-                                                    />
-                                                </div>
-                                            )}
                                         </div>
                                         <div>
-                                            <Label htmlFor="panBack" className="mb-2">Pan Back Side</Label>
-                                            <Input
-                                                id="panBack"
-                                                value={formData.panCardImage[1]}
-                                                onChange={(e) => handleImageUrlChange('panCardImage', 1, e.target.value)}
-                                                placeholder="Enter PAN back image URL"
+                                            <FileUpload
+                                                label="PAN Card Back"
+                                                value={formData.panCardBack}
+                                                onChange={(url) => setFormData(p => ({ ...p, panCardBack: url }))}
+                                                endpoint={UPLOAD_ENDPOINTS.ADMIN_PAN_BACK}
+                                                disabled={saving}
                                             />
-                                            {formData.panCardImage[1] && (
-                                                <div className="mt-2">
-                                                    <img
-                                                        src={formData.panCardImage[1]}
-                                                        alt="PAN Back"
-                                                        className="w-32 h-20 object-cover rounded border"
-                                                        onError={(e) => {
-                                                            e.currentTarget.style.display = 'none'
-                                                        }}
-                                                    />
-                                                </div>
-                                            )}
                                         </div>
                                     </div>
                                 </div>
@@ -636,6 +596,16 @@ export function AdminAddDialog({ open, onClose, onSuccess }: AdminAddDialogProps
                                 {fieldErrors.ifscCode && (
                                     <p className="text-sm text-red-500 mt-1">{fieldErrors.ifscCode}</p>
                                 )}
+                            </div>
+
+                            <div className="md:col-span-2">
+                                <FileUpload
+                                    label="Bank Passbook/Statement"
+                                    value={formData.passbookImage}
+                                    onChange={(url) => setFormData(p => ({ ...p, passbookImage: url }))}
+                                    endpoint={UPLOAD_ENDPOINTS.ADMIN_PASSBOOK}
+                                    disabled={saving}
+                                />
                             </div>
                         </div>
                     </section>
