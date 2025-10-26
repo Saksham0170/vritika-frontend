@@ -153,17 +153,17 @@ export default function ProductManagementPage() {
   })
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-screen-xl mx-auto p-6 space-y-6">
       {/* Header Section */}
-      <div className="mb-6 px-6 pt-6">
-        <h1 className="text-2xl font-bold">Product Management</h1>
-        <p className="text-muted-foreground">
+      <div className="pb-4 border-b border-border/40">
+        <h1 className="text-2xl font-bold tracking-tight">Product Management</h1>
+        <p className="text-muted-foreground mt-2">
           Manage different types of products efficiently by categorizing them below.
         </p>
       </div>
 
       {/* Product Type Navigation */}
-      <div className="flex flex-wrap gap-2 mb-6 px-6">
+      <div className="flex flex-wrap gap-2">
         {PRODUCT_TYPES.map((type) => {
           const isActive = activeTab === type
           return (
@@ -183,7 +183,7 @@ export default function ProductManagementPage() {
       </div>
 
       {/* Content for each type */}
-      <div className="mt-6">
+      <div>
         <DataTable
           columns={productColumns}
           data={products}

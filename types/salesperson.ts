@@ -57,7 +57,12 @@ export interface UpdateSalespersonRequest {
 
 export interface PaginatedSalespersonsResponse {
     status: boolean
-    data: Salesperson[]
+    data: {
+        page: number
+        limit: number
+        totalData: number
+        data: Salesperson[]
+    }
     message: string
 }
 

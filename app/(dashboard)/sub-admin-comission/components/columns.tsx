@@ -20,22 +20,25 @@ interface RoleCommissionColumnsProps {
 
 export const createRoleCommissionColumns = ({ onEdit, onDelete }: RoleCommissionColumnsProps = {}): ColumnDef<RoleCommission>[] => [
     {
-        accessorKey: "subAdminId.name",
+        id: "subadmin-name",
         header: "Sub Admin Name",
+        accessorFn: (row) => row.subAdminId?.name || "N/A",
         cell: ({ row }) => (
             <div className="font-medium">{row.original.subAdminId?.name || "N/A"}</div>
         ),
     },
     {
-        accessorKey: "subAdminId.email",
+        id: "subadmin-email",
         header: "Sub Admin Email",
+        accessorFn: (row) => row.subAdminId?.email || "N/A",
         cell: ({ row }) => (
             <div className="text-muted-foreground">{row.original.subAdminId?.email || "N/A"}</div>
         ),
     },
     {
-        accessorKey: "subAdminId.level",
+        id: "subadmin-level",
         header: "Level",
+        accessorFn: (row) => row.subAdminId?.level || 0,
         cell: ({ row }) => (
             <div className="font-medium">Level {row.original.subAdminId?.level || "N/A"}</div>
         ),

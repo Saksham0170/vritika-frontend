@@ -44,7 +44,8 @@ const categoryOptions: MultiSelectOption[] = [
     { value: "inverter", label: "Inverter" },
     { value: "batteries", label: "Batteries" },
     { value: "cables", label: "Cables" },
-    { value: "structure", label: "Structure" }
+    { value: "structure", label: "Structure" },
+    { value: "kit", label: "Kit" }
 ]
 
 export function BrandAddDialog({ open, onClose, onSuccess }: BrandAddDialogProps) {

@@ -8,14 +8,27 @@ import { Admin } from "@/types/admin"
 import { AdminDetailDialog } from "./components/admin-detail-dialog"
 import { AdminEditDialog } from "./components/admin-edit-dialog"
 import { AdminAddDialog } from "./components/admin-add-dialog"
+import { useToast } from "@/hooks/use-toast"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
 
 export default function AdminManagementPage() {
+  const { toast } = useToast()
   const [admins, setAdmins] = useState<Admin[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [selectedAdminId, setSelectedAdminId] = useState<string | null>(null)
   const [editingAdminId, setEditingAdminId] = useState<string | null>(null)
   const [isAddingAdmin, setIsAddingAdmin] = useState(false)
+  const [deletingAdmin, setDeletingAdmin] = useState<Admin | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1)
@@ -31,8 +44,13 @@ export default function AdminManagementPage() {
       setError(null)
     } catch (err: unknown) {
       console.error("Error loading admins:", err)
-      const errorMessage = err instanceof Error ? err.message : "Failed to load admins"
+      const errorMessage = err instanceof Error ? err.message : "Unable to load admin data"
       setError(errorMessage)
+      toast({
+        title: "Failed to Load Admins",
+        description: "Unable to fetch admin data. Please check your connection and try again.",
+        variant: "destructive"
+      })
     } finally {
       setLoading(false)
     }
@@ -66,10 +84,32 @@ export default function AdminManagementPage() {
   }
 
   const handleDelete = (admin: Admin) => {
-    deleteAdmin(admin._id)
-      .then(() => {
-        setAdmins((prev) => prev.filter((a) => a._id !== admin._id))
+    setDeletingAdmin(admin)
+  }
+
+  const confirmDelete = async () => {
+    if (!deletingAdmin) return
+
+    setIsDeleting(true)
+    try {
+      await deleteAdmin(deletingAdmin._id)
+      setAdmins((prev) => prev.filter((a) => a._id !== deletingAdmin._id))
+      setDeletingAdmin(null)
+      toast({
+        title: "Admin Deleted",
+        description: "The admin has been successfully removed from the system.",
+        variant: "success"
       })
+    } catch (error: unknown) {
+      console.error("Error deleting admin:", error)
+      toast({
+        title: "Failed to Delete Admin",
+        description: error instanceof Error ? error.message : 'Something went wrong while deleting the admin. Please try again.',
+        variant: "destructive"
+      })
+    } finally {
+      setIsDeleting(false)
+    }
   }
 
   const handleEditSuccess = () => {
@@ -126,6 +166,34 @@ export default function AdminManagementPage() {
         onClose={() => setIsAddingAdmin(false)}
         onSuccess={handleAddSuccess}
       />
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={!!deletingAdmin} onOpenChange={(open: boolean) => !open && setDeletingAdmin(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Admin</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete "{deletingAdmin?.name}"? This action cannot be undone and will permanently remove all associated data.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDeletingAdmin(null)}
+              disabled={isDeleting}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={confirmDelete}
+              disabled={isDeleting}
+            >
+              {isDeleting ? "Deleting..." : "Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   )
 }

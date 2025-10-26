@@ -16,6 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { LoadingSpinner } from "@/components/ui/loading-components"
 import { getAdminById, updateAdmin } from "@/services/admin"
 import { Admin, UpdateAdminRequest } from "@/types/admin"
+import { useToast } from "@/hooks/use-toast"
 
 
 interface AdminEditDialogProps {
@@ -26,6 +27,7 @@ interface AdminEditDialogProps {
 }
 
 export function AdminEditDialog({ adminId, open, onClose, onSuccess }: AdminEditDialogProps) {
+    const { toast } = useToast()
     const [admin, setAdmin] = useState<Admin | null>(null)
     const [loading, setLoading] = useState(false)
     const [saving, setSaving] = useState(false)
@@ -94,6 +96,11 @@ export function AdminEditDialog({ adminId, open, onClose, onSuccess }: AdminEdit
                 .catch((err: unknown) => {
                     const errorMessage = err instanceof Error ? err.message : "Failed to load admin"
                     setError(errorMessage)
+                    toast({
+                        title: "Error",
+                        description: "Failed to load admin details. Please try again.",
+                        variant: "destructive"
+                    })
                 })
                 .finally(() => setLoading(false))
         }
@@ -180,10 +187,18 @@ export function AdminEditDialog({ adminId, open, onClose, onSuccess }: AdminEdit
             if (formData.passbookImage !== admin.passbookImage) updateData.passbookImage = formData.passbookImage
 
             await updateAdmin(adminId, updateData)
+            toast({
+                title: "Success",
+                description: "Admin updated successfully"
+            })
             onSuccess?.()
             onClose()
-        } catch {
-            // Handle error silently
+        } catch (error) {
+            toast({
+                title: "Error",
+                description: error instanceof Error ? error.message : "Failed to update admin. Please try again.",
+                variant: "destructive"
+            })
         } finally {
             setSaving(false)
         }

@@ -29,6 +29,8 @@ import {
     SpvTypeInverter,
     SpvTypeBattery,
     SpvTypeCable,
+    SpvTypeService,
+    SpvTypeBOS,
     Phase,
     Unit
 } from "@/types/product"
@@ -75,6 +77,25 @@ const cableSpvTypes = [
     "AC Cable",
     "DC Cable",
     "Earthing Cable"
+]
+
+// Service SPV Type options
+const serviceSpvTypes = [
+    "Service Charge ( Per KWP)",
+    "Civil work (Per KWP)",
+    "Conduit Pipe (Per Description )",
+    "Net Metering 1 phase",
+    "Net metering 3 phase",
+    "Per floor price (above 2)"
+]
+
+// BOS SPV Type options
+const bosSpvTypes = [
+    "ACDB",
+    "DCDB",
+    "Lightning Arrester",
+    "MC4 Connector",
+    "Earthing"
 ]
 
 // Category options for pricing
@@ -236,7 +257,7 @@ export function ProductAddDialog({ open, onClose, onSuccess, selectedType }: Pro
                 // Optional fields
                 image: formData.image.trim() || undefined,
                 spvBrand: formData.spvBrand.trim() || undefined,
-                spvType: (formData.spvType.trim() as SpvTypeModule | SpvTypeInverter | SpvTypeBattery | SpvTypeCable) || undefined,
+                spvType: (formData.spvType.trim() as SpvTypeModule | SpvTypeInverter | SpvTypeBattery | SpvTypeCable | SpvTypeService | SpvTypeBOS) || undefined,
                 phase: (formData.phase as Phase) || undefined,
                 capacity: formData.capacity.trim() || undefined,
                 spvCapacity: formData.spvCapacity.trim() || undefined,
@@ -536,15 +557,25 @@ export function ProductAddDialog({ open, onClose, onSuccess, selectedType }: Pro
                 return (
                     <>
                         <div>
-                            <Label htmlFor="spvBrand" className="mb-2">
+                            <Label className="mb-2">
                                 SPV Brand <span className="text-red-500">*</span>
                             </Label>
-                            <Input
-                                id="spvBrand"
+                            <Select
                                 value={formData.spvBrand}
-                                onChange={(e) => handleInputChange("spvBrand", e.target.value)}
-                                placeholder="Enter SPV brand"
-                            />
+                                onValueChange={(value) => handleInputChange("spvBrand", value)}
+                                disabled={loadingBrands}
+                            >
+                                <SelectTrigger className="w-full">
+                                    <SelectValue placeholder={loadingBrands ? "Loading brands..." : "Select SPV brand"} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {brands.map((brand) => (
+                                        <SelectItem key={brand._id} value={brand._id}>
+                                            {brand.brandName}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </div>
                         <div>
                             <Label className="mb-2">
@@ -672,32 +703,64 @@ export function ProductAddDialog({ open, onClose, onSuccess, selectedType }: Pro
 
             case "Service":
                 return (
-                    <div className="col-span-2">
-                        <Label htmlFor="description" className="mb-2">
-                            Description <span className="text-red-500">*</span>
-                        </Label>
-                        <Input
-                            id="description"
-                            value={formData.description || ""}
-                            onChange={(e) => handleInputChange("description", e.target.value)}
-                            placeholder="Enter service description"
-                        />
-                    </div>
+                    <>
+                        <div>
+                            <Label className="mb-2">
+                                SPV Type <span className="text-red-500">*</span>
+                            </Label>
+                            <Select
+                                value={formData.spvType}
+                                onValueChange={(value) => handleInputChange("spvType", value)}
+                            >
+                                <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Select SPV type" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {serviceSpvTypes.map((type) => (
+                                        <SelectItem key={type} value={type}>
+                                            {type}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div>
+                            <Label htmlFor="description" className="mb-2">
+                                Description <span className="text-red-500">*</span>
+                            </Label>
+                            <Input
+                                id="description"
+                                value={formData.description || ""}
+                                onChange={(e) => handleInputChange("description", e.target.value)}
+                                placeholder="Enter service description"
+                            />
+                        </div>
+                    </>
                 )
 
             case "Kit":
                 return (
                     <>
                         <div>
-                            <Label htmlFor="spvBrand" className="mb-2">
+                            <Label className="mb-2">
                                 SPV Brand <span className="text-red-500">*</span>
                             </Label>
-                            <Input
-                                id="spvBrand"
+                            <Select
                                 value={formData.spvBrand}
-                                onChange={(e) => handleInputChange("spvBrand", e.target.value)}
-                                placeholder="Enter SPV brand"
-                            />
+                                onValueChange={(value) => handleInputChange("spvBrand", value)}
+                                disabled={loadingBrands}
+                            >
+                                <SelectTrigger className="w-full">
+                                    <SelectValue placeholder={loadingBrands ? "Loading brands..." : "Select SPV brand"} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {brands.map((brand) => (
+                                        <SelectItem key={brand._id} value={brand._id}>
+                                            {brand.brandName}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </div>
                         <div>
                             <Label className="mb-2">
@@ -746,17 +809,39 @@ export function ProductAddDialog({ open, onClose, onSuccess, selectedType }: Pro
 
             case "BOS":
                 return (
-                    <div className="col-span-2">
-                        <Label htmlFor="description" className="mb-2">
-                            Description <span className="text-red-500">*</span>
-                        </Label>
-                        <Input
-                            id="description"
-                            value={formData.description || ""}
-                            onChange={(e) => handleInputChange("description", e.target.value)}
-                            placeholder="Enter BOS description"
-                        />
-                    </div>
+                    <>
+                        <div>
+                            <Label className="mb-2">
+                                SPV Type <span className="text-red-500">*</span>
+                            </Label>
+                            <Select
+                                value={formData.spvType}
+                                onValueChange={(value) => handleInputChange("spvType", value)}
+                            >
+                                <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Select SPV type" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {bosSpvTypes.map((type) => (
+                                        <SelectItem key={type} value={type}>
+                                            {type}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div>
+                            <Label htmlFor="description" className="mb-2">
+                                Description <span className="text-red-500">*</span>
+                            </Label>
+                            <Input
+                                id="description"
+                                value={formData.description || ""}
+                                onChange={(e) => handleInputChange("description", e.target.value)}
+                                placeholder="Enter BOS description"
+                            />
+                        </div>
+                    </>
                 )
 
             case "Services/Freebies":

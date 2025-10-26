@@ -131,7 +131,7 @@ export default function RoleCommissionPage() {
         data={roleCommissions}
         title="Salesperson Commission Management"
         description="Manage commission rates for different salesperson levels"
-        searchKey="salesPersonId.name"
+        searchKey="salesperson-name"
         searchPlaceholder="Search by salesperson name..."
         onAdd={handleAddRoleCommission}
         addButtonText="Add Commission"

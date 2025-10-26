@@ -40,13 +40,14 @@ export const createProductColumns = ({ onEdit, onDelete }: ProductColumnsProps):
         },
     },
     {
-        accessorKey: "spvBrand",
+        accessorKey: "brandDetails",
         header: "Brand",
         cell: ({ row }) => {
-            const brand = row.getValue("spvBrand") as string
+            const product = row.original
+            const brandName = product.brandDetails?.brandName
             return (
                 <div className="font-medium">
-                    {brand || <span className="text-muted-foreground">-</span>}
+                    {brandName || <span className="text-muted-foreground">-</span>}
                 </div>
             )
         },

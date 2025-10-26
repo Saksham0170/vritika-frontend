@@ -17,6 +17,7 @@ import { MultiSelect, type MultiSelectOption } from "@/components/ui/multiselect
 import { LoadingSpinner } from "@/components/ui/loading-components"
 import { getBrandById, updateBrand } from "@/services/brand"
 import { Brand, UpdateBrandRequest } from "@/types/brand"
+import { useToast } from "@/hooks/use-toast"
 
 
 interface BrandEditDialogProps {
@@ -39,10 +40,12 @@ const categoryOptions: MultiSelectOption[] = [
     { value: "inverter", label: "Inverter" },
     { value: "batteries", label: "Batteries" },
     { value: "cables", label: "Cables" },
-    { value: "structure", label: "Structure" }
+    { value: "structure", label: "Structure" },
+    { value: "kit", label: "Kit" }
 ]
 
 export function BrandEditDialog({ brandId, open, onClose, onSuccess }: BrandEditDialogProps) {
+    const { toast } = useToast()
     const [brand, setBrand] = useState<Brand | null>(null)
     const [loading, setLoading] = useState(false)
     const [saving, setSaving] = useState(false)
@@ -94,6 +97,11 @@ export function BrandEditDialog({ brandId, open, onClose, onSuccess }: BrandEdit
                 .catch((err: unknown) => {
                     const errorMessage = err instanceof Error ? err.message : "Failed to load brand"
                     setError(errorMessage)
+                    toast({
+                        title: "Error",
+                        description: "Failed to load brand details. Please try again.",
+                        variant: "destructive"
+                    })
                 })
                 .finally(() => setLoading(false))
         }
@@ -170,10 +178,18 @@ export function BrandEditDialog({ brandId, open, onClose, onSuccess }: BrandEdit
             }
 
             await updateBrand(brandId, updateData)
+            toast({
+                title: "Success",
+                description: "Brand updated successfully"
+            })
             onSuccess?.()
             onClose()
-        } catch {
-            // Handle error silently
+        } catch (error) {
+            toast({
+                title: "Error",
+                description: error instanceof Error ? error.message : "Failed to update brand. Please try again.",
+                variant: "destructive"
+            })
         } finally {
             setSaving(false)
         }

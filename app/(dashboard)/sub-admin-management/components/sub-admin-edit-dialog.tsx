@@ -16,6 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { LoadingSpinner } from "@/components/ui/loading-components"
 import { getSubAdminById, updateSubAdmin } from "@/services/sub-admin"
 import { SubAdmin, UpdateSubAdminRequest } from "@/types/sub-admin"
+import { useToast } from "@/hooks/use-toast"
 
 
 interface SubAdminEditDialogProps {
@@ -26,6 +27,7 @@ interface SubAdminEditDialogProps {
 }
 
 export function SubAdminEditDialog({ subAdminId, open, onClose, onSuccess }: SubAdminEditDialogProps) {
+    const { toast } = useToast()
     const [subAdmin, setSubAdmin] = useState<SubAdmin | null>(null)
     const [loading, setLoading] = useState(false)
     const [saving, setSaving] = useState(false)
@@ -82,8 +84,13 @@ export function SubAdminEditDialog({ subAdminId, open, onClose, onSuccess }: Sub
                     })
                 })
                 .catch((err: unknown) => {
-                    const errorMessage = err instanceof Error ? err.message : "Failed to load sub admin"
+                    const errorMessage = err instanceof Error ? err.message : "Unable to load sub admin data"
                     setError(errorMessage)
+                    toast({
+                        title: "Failed to Load Sub Admin",
+                        description: "Unable to fetch sub admin details. Please try again.",
+                        variant: "destructive"
+                    })
                 })
                 .finally(() => setLoading(false))
         }
@@ -156,10 +163,20 @@ export function SubAdminEditDialog({ subAdminId, open, onClose, onSuccess }: Sub
             if (formData.passbookImage !== subAdmin.passbookImage) updateData.passbookImage = formData.passbookImage
 
             await updateSubAdmin(subAdminId, updateData)
+            toast({
+                title: "Sub Admin Updated",
+                description: "Sub admin details have been successfully updated.",
+                variant: "success"
+            })
             onSuccess?.()
             onClose()
-        } catch {
-            // Handle error silently
+        } catch (error) {
+            console.error('Error updating sub-admin:', error)
+            toast({
+                title: "Failed to Update Sub Admin",
+                description: error instanceof Error ? error.message : 'Something went wrong while updating the sub admin. Please try again.',
+                variant: "destructive"
+            })
         } finally {
             setSaving(false)
         }

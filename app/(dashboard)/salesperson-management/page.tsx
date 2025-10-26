@@ -24,19 +24,17 @@ export default function SalespersonManagementPage() {
   const [pageSize, setPageSize] = useState(10)
   const [totalCount, setTotalCount] = useState(0)
 
-  const loadSalespersons = async () => {
+  const loadSalespersons = async (page: number = currentPage, limit: number = pageSize) => {
     try {
       setLoading(true)
       setError(null)
       const response = await getSalespersonsPaginated({
-        page: currentPage,
-        limit: pageSize,
+        page,
+        limit,
       })
 
-      setSalespersons(response.data || [])
-      // Note: API doesn't provide separate total count, using array length for now
-      // For proper pagination, we might need total count from a separate endpoint or header
-      setTotalCount(response.data.length || 0)
+      setSalespersons(response.data?.data || [])
+      setTotalCount(response.data?.totalData || 0)
     } catch (error) {
       console.error("Error loading salespersons:", error)
       setError("Failed to load salespersons. Please try again.")
@@ -49,11 +47,17 @@ export default function SalespersonManagementPage() {
 
   useEffect(() => {
     loadSalespersons()
-  }, [currentPage, pageSize])
+  }, [])
 
-  const handlePageChange = (page: number, size: number) => {
+  const handlePageChange = (page: number, newPageSize: number) => {
     setCurrentPage(page)
-    setPageSize(size)
+    if (newPageSize !== pageSize) {
+      setPageSize(newPageSize)
+      // Reset to page 1 when page size changes
+      loadSalespersons(1, newPageSize)
+    } else {
+      loadSalespersons(page, newPageSize)
+    }
   }
 
   const handleRowClick = (salesperson: Salesperson) => {
@@ -98,8 +102,8 @@ export default function SalespersonManagementPage() {
     onDelete: handleDelete,
   })
 
-  const selectedSalesperson = salespersons.find(s => s._id === selectedSalespersonId)
-  const editingSalesperson = salespersons.find(s => s._id === editingSalespersonId)
+  const selectedSalesperson = Array.isArray(salespersons) ? salespersons.find(s => s._id === selectedSalespersonId) : undefined
+  const editingSalesperson = Array.isArray(salespersons) ? salespersons.find(s => s._id === editingSalespersonId) : undefined
 
   return (
     <>

@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label"
 import { LoadingSpinner } from "@/components/ui/loading-components"
 import { getSubAdminById } from "@/services/sub-admin"
 import { SubAdmin } from "@/types/sub-admin"
+import { useToast } from "@/hooks/use-toast"
 
 interface SubAdminDetailDialogProps {
     subAdminId: string | null
@@ -21,6 +22,7 @@ interface SubAdminDetailDialogProps {
 }
 
 export function SubAdminDetailDialog({ subAdminId, open, onClose }: SubAdminDetailDialogProps) {
+    const { toast } = useToast()
     const [subAdmin, setSubAdmin] = useState<SubAdmin | null>(null)
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
@@ -34,6 +36,11 @@ export function SubAdminDetailDialog({ subAdminId, open, onClose }: SubAdminDeta
                 .catch((err: unknown) => {
                     const errorMessage = err instanceof Error ? err.message : "Failed to load sub admin details"
                     setError(errorMessage)
+                    toast({
+                        title: "Error",
+                        description: "Failed to load sub admin details. Please try again.",
+                        variant: "destructive"
+                    })
                 })
                 .finally(() => setLoading(false))
         }

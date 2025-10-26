@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label"
 import { LoadingSpinner } from "@/components/ui/loading-components"
 import { getAdminById } from "@/services/admin"
 import { Admin } from "@/types/admin"
+import { useToast } from "@/hooks/use-toast"
 
 interface AdminDetailDialogProps {
     adminId: string | null

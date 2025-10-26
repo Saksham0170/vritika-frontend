@@ -15,12 +15,24 @@ export type SpvTypeModule = "Monocrystalline" | "Polycrystalline" | "TOP CON" | 
 export type SpvTypeInverter = "Ongrid" | "Offgrid" | "Hybrid"
 export type SpvTypeBattery = "Lead Acid" | "Lithium"
 export type SpvTypeCable = "AC Cable" | "DC Cable" | "Earthing Cable"
+export type SpvTypeService = "Service Charge ( Per KWP)" | "Civil work (Per KWP)" | "Conduit Pipe (Per Description )" | "Net Metering 1 phase" | "Net metering 3 phase" | "Per floor price (above 2)"
+export type SpvTypeBOS = "ACDB" | "DCDB" | "Lightning Arrester" | "MC4 Connector" | "Earthing"
 export type Phase = "Single Phase" | "Three Phase"
 export type CategoryPricing = "Premium" | "Mid-Priced" | "Low-Priced"
 export type CategoryKit = "Premium" | "Mid" | "Low"
 export type Unit = "meter" | "inch" | "cm"
 
-// Database Product interface - matches API response
+// Brand details interface for nested brand information
+export interface BrandDetails {
+    _id: string
+    brandName: string
+    brandDetails: string
+    productCategory: string[]
+    quality: string
+    image: string
+}
+
+// Database Product interface 
 export interface Product {
     _id: string
     productName: string
@@ -29,9 +41,12 @@ export interface Product {
     sellinPrice: number
     image?: string
 
+    // Brand information - nested object
+    brandDetails?: BrandDetails
+
     // Solar Module specific
     spvBrand?: string
-    spvType?: SpvTypeModule | SpvTypeInverter | SpvTypeBattery | SpvTypeCable
+    spvType?: SpvTypeModule | SpvTypeInverter | SpvTypeBattery | SpvTypeCable | SpvTypeService | SpvTypeBOS
     category?: CategoryPricing | CategoryKit
     spvCapacity?: string
 
@@ -116,10 +131,13 @@ export interface CablesForm extends BaseProductForm {
 
 export interface BOSForm extends BaseProductForm {
     type: "BOS"
+    spvType: SpvTypeBOS
+    description: string
 }
 
 export interface ServiceForm extends BaseProductForm {
     type: "Service"
+    spvType: SpvTypeService
     description: string
 }
 
@@ -161,7 +179,7 @@ export interface CreateProductRequest {
 
     // Solar Module fields
     spvBrand?: string
-    spvType?: SpvTypeModule | SpvTypeInverter | SpvTypeBattery | SpvTypeCable
+    spvType?: SpvTypeModule | SpvTypeInverter | SpvTypeBattery | SpvTypeCable | SpvTypeService | SpvTypeBOS
     category?: CategoryPricing | CategoryKit | string
     spvCapacity?: string
 
@@ -197,7 +215,7 @@ export interface UpdateProductRequest {
 
     // Solar Module fields
     spvBrand?: string
-    spvType?: SpvTypeModule | SpvTypeInverter | SpvTypeBattery | SpvTypeCable
+    spvType?: SpvTypeModule | SpvTypeInverter | SpvTypeBattery | SpvTypeCable | SpvTypeService | SpvTypeBOS
     category?: CategoryPricing | CategoryKit | string
     spvCapacity?: string
 

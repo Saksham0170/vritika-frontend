@@ -131,7 +131,7 @@ export default function RoleCommissionPage() {
         data={roleCommissions}
         title="Sub-Admin Commission Management"
         description="Manage commission rates for different sub-admin levels"
-        searchKey="subAdminId.name"
+        searchKey="subadmin-name"
         searchPlaceholder="Search by sub-admin name..."
         onAdd={handleAddRoleCommission}
         addButtonText="Add Commission"

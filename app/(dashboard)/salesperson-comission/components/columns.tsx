@@ -20,22 +20,25 @@ interface RoleCommissionColumnsProps {
 
 export const createRoleCommissionColumns = ({ onEdit, onDelete }: RoleCommissionColumnsProps = {}): ColumnDef<RoleCommission>[] => [
     {
-        accessorKey: "salesPersonId.name",
+        id: "salesperson-name",
         header: "Salesperson Name",
+        accessorFn: (row) => row.salesPersonId?.name || "N/A",
         cell: ({ row }) => (
             <div className="font-medium">{row.original.salesPersonId?.name || "N/A"}</div>
         ),
     },
     {
-        accessorKey: "salesPersonId.email",
+        id: "salesperson-email",
         header: "Salesperson Email",
+        accessorFn: (row) => row.salesPersonId?.email || "N/A",
         cell: ({ row }) => (
             <div className="text-muted-foreground">{row.original.salesPersonId?.email || "N/A"}</div>
         ),
     },
     {
-        accessorKey: "salesPersonId.phoneNumber",
+        id: "salesperson-phone",
         header: "Phone Number",
+        accessorFn: (row) => row.salesPersonId?.phoneNumber || "N/A",
         cell: ({ row }) => (
             <div className="font-medium">{row.original.salesPersonId?.phoneNumber || "N/A"}</div>
         ),

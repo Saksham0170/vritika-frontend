@@ -22,6 +22,8 @@ import {
 import { createSubAdmin } from "@/services/sub-admin"
 import { CreateSubAdminRequest } from "@/types/sub-admin"
 import { useToast } from "@/hooks/use-toast"
+import { subAdminFormSchema } from "@/lib/validators"
+import { z } from "zod"
 
 
 interface SubAdminAddDialogProps {
@@ -100,111 +102,74 @@ export function SubAdminAddDialog({ open, onClose, onSuccess }: SubAdminAddDialo
     }
 
     const validateForm = () => {
-        const errors = {
-            name: "",
-            phone: "",
-            email: "",
-            password: "",
-            gstNo: "",
-            contactPersonName: "",
-            address: "",
-            aadharCardNo: "",
-            panCardNo: "",
-            bankAccountNo: "",
-            ifscCode: "",
-            bankHolderName: ""
-        }
+        try {
+            // Validate using Zod schema
+            subAdminFormSchema.parse({
+                name: formData.name,
+                email: formData.email,
+                phone: formData.phone,
+                password: formData.password,
+                adminType: formData.adminType,
+                gstNo: formData.gstNo || undefined,
+                contactPersonName: formData.contactPersonName || undefined,
+                address: formData.address,
+                aadharCardNo: formData.aadharCardNo,
+                panCardNo: formData.panCardNo,
+                bankAccountNo: formData.bankAccountNo,
+                ifscCode: formData.ifscCode,
+                bankHolderName: formData.bankHolderName,
+            })
 
-        if (!formData.name.trim()) {
-            errors.name = "Name is required"
-        }
-
-        if (!formData.phone.trim()) {
-            errors.phone = "Phone is required"
-        }
-
-        if (!formData.email.trim()) {
-            errors.email = "Email is required"
-        } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-            errors.email = "Please enter a valid email address"
-        }
-
-        if (!formData.password.trim()) {
-            errors.password = "Password is required"
-        } else if (formData.password.length < 6) {
-            errors.password = "Password must be at least 6 characters"
-        }
-
-        // Only validate organisation fields if adminType is Organisation
-        if (formData.adminType === "Organisation") {
-            if (!formData.gstNo.trim()) {
-                errors.gstNo = "GST Number is required for Organisation"
-            }
-
-            if (!formData.contactPersonName.trim()) {
-                errors.contactPersonName = "Contact Person Name is required for Organisation"
-            }
-        }
-
-        if (!formData.address.trim()) {
-            errors.address = "Address is required"
-        }
-
-        if (!formData.aadharCardNo.trim()) {
-            errors.aadharCardNo = "Aadhaar Card Number is required"
-        }
-
-        if (!formData.panCardNo.trim()) {
-            errors.panCardNo = "PAN Card Number is required"
-        }
-
-        if (!formData.bankAccountNo.trim()) {
-            errors.bankAccountNo = "Bank Account Number is required"
-        }
-
-        if (!formData.ifscCode.trim()) {
-            errors.ifscCode = "IFSC Code is required"
-        }
-
-        if (!formData.bankHolderName.trim()) {
-            errors.bankHolderName = "Bank Holder Name is required"
-        }
-
-        setFieldErrors(errors)
-
-        // Focus on first field with error
-        const hasErrors = Object.values(errors).some(error => error !== "")
-        if (hasErrors) {
-            setTimeout(() => {
-                if (errors.name) {
-                    document.getElementById("name")?.focus()
-                } else if (errors.phone) {
-                    document.getElementById("phone")?.focus()
-                } else if (errors.email) {
-                    document.getElementById("email")?.focus()
-                } else if (errors.password) {
-                    document.getElementById("password")?.focus()
-                } else if (errors.gstNo) {
-                    document.getElementById("gstNo")?.focus()
-                } else if (errors.contactPersonName) {
-                    document.getElementById("contactPersonName")?.focus()
-                } else if (errors.address) {
-                    document.getElementById("address")?.focus()
-                } else if (errors.aadharCardNo) {
-                    document.getElementById("aadharCardNo")?.focus()
-                } else if (errors.panCardNo) {
-                    document.getElementById("panCardNo")?.focus()
-                } else if (errors.bankAccountNo) {
-                    document.getElementById("bankAccountNo")?.focus()
-                } else if (errors.ifscCode) {
-                    document.getElementById("ifscCode")?.focus()
-                } else if (errors.bankHolderName) {
-                    document.getElementById("bankHolderName")?.focus()
+            // Clear errors if validation passes
+            setFieldErrors({
+                name: "",
+                phone: "",
+                email: "",
+                password: "",
+                gstNo: "",
+                contactPersonName: "",
+                address: "",
+                aadharCardNo: "",
+                panCardNo: "",
+                bankAccountNo: "",
+                ifscCode: "",
+                bankHolderName: ""
+            })
+            return true
+        } catch (error) {
+            if (error instanceof z.ZodError) {
+                const errors = {
+                    name: "",
+                    phone: "",
+                    email: "",
+                    password: "",
+                    gstNo: "",
+                    contactPersonName: "",
+                    address: "",
+                    aadharCardNo: "",
+                    panCardNo: "",
+                    bankAccountNo: "",
+                    ifscCode: "",
+                    bankHolderName: ""
                 }
-            }, 100)
-        }
 
-        return !hasErrors
+                error.issues.forEach((issue) => {
+                    const field = issue.path[0] as keyof typeof errors
+                    if (field in errors) {
+                        errors[field] = issue.message
+                    }
+                })
+
+                setFieldErrors(errors)
+
+                // Focus on first field with error
+                setTimeout(() => {
+                    const firstErrorField = error.issues[0]?.path[0] as string
+                    document.getElementById(firstErrorField)?.focus()
+                }, 100)
+            }
+            return false
+        }
     }
 
     const handleSave = async () => {
@@ -241,8 +206,8 @@ export function SubAdminAddDialog({ open, onClose, onSuccess }: SubAdminAddDialo
 
             await createSubAdmin(createData)
             toast({
-                title: "Success",
-                description: "Sub-admin created successfully",
+                title: "Sub Admin Created",
+                description: "New sub admin has been successfully added to the system.",
                 variant: "success"
             })
             resetForm()
@@ -251,8 +216,8 @@ export function SubAdminAddDialog({ open, onClose, onSuccess }: SubAdminAddDialo
         } catch (error) {
             console.error('Error creating sub-admin:', error)
             toast({
-                title: "Error creating sub-admin",
-                description: error instanceof Error ? error.message : 'Unknown error',
+                title: "Failed to Create Sub Admin",
+                description: error instanceof Error ? error.message : 'Something went wrong while creating the sub admin. Please check your information and try again.',
                 variant: "destructive"
             })
         } finally {

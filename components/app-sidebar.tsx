@@ -1,9 +1,9 @@
 "use client"
 
 import * as React from "react"
+import Image from "next/image"
 import {
   IconDashboard,
-  IconInnerShadowTop,
   IconUserShield,
   IconBuildingStore,
   IconPackage,
@@ -11,7 +11,6 @@ import {
   IconCoins,
   IconTicket,
 } from "@tabler/icons-react"
-
 import { useUserStore } from "@/store/userStore"
 
 import { NavMain } from "@/components/nav-main"
@@ -141,8 +140,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton className="data-[slot=sidebar-menu-button]:!p-1.5">
-                <IconInnerShadowTop className="!size-5" />
-                <span className="text-base font-semibold">Vritika</span>
+                <Image
+                  src="/vritkaLogo.svg"
+                  alt="Vritika Logo"
+                  width={120}
+                  height={32}
+                  className="h-8 w-auto"
+                />
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
@@ -163,9 +167,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               asChild
               className="data-[slot=sidebar-menu-button]:!p-3 hover:bg-sidebar-accent transition-colors"
             >
-              <a href="#" className="flex items-center gap-3">
-                <IconInnerShadowTop className="!size-6 text-sidebar-primary" />
-                <span className="text-lg font-bold tracking-tight text-sidebar-foreground">Vritika</span>
+              <a href="#" className="flex items-center justify-center">
+                <Image
+                  src="/vritkaLogo.svg"
+                  alt="Vritika Logo"
+                  width={140}
+                  height={36}
+                  className="h-9 w-auto"
+                />
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>

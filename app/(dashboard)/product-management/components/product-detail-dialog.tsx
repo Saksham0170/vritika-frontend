@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label"
 import { LoadingSpinner } from "@/components/ui/loading-components"
 import { getProductById } from "@/services/product"
 import { Product } from "@/types/product"
+import { useToast } from "@/hooks/use-toast"
 
 interface ProductDetailDialogProps {
     productId: string | null
@@ -22,6 +23,7 @@ interface ProductDetailDialogProps {
 }
 
 export function ProductDetailDialog({ productId, open, onClose }: ProductDetailDialogProps) {
+    const { toast } = useToast()
     const [product, setProduct] = useState<Product | null>(null)
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
@@ -35,6 +37,11 @@ export function ProductDetailDialog({ productId, open, onClose }: ProductDetailD
                 .catch((err: unknown) => {
                     const errorMessage = err instanceof Error ? err.message : "Failed to load product details"
                     setError(errorMessage)
+                    toast({
+                        title: "Error",
+                        description: "Failed to load product details. Please try again.",
+                        variant: "destructive"
+                    })
                 })
                 .finally(() => setLoading(false))
         }
@@ -133,15 +140,15 @@ export function ProductDetailDialog({ productId, open, onClose }: ProductDetailD
                                 )}
 
                                 {/* Additional Specifications */}
-                                {(product.spvBrand || product.spvType || product.phase || product.capacity || product.spvCapacity || product.category || product.height || product.width || product.weight || product.thickness || product.unit || product.free || product.description) && (
+                                {(product.brandDetails || product.spvType || product.phase || product.capacity || product.spvCapacity || product.category || product.height || product.width || product.weight || product.thickness || product.unit || product.free || product.description) && (
                                     <div className="pt-4 border-t border-border/30">
                                         <h3 className="text-lg font-semibold mb-4">Additional Specifications</h3>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                            {product.spvBrand && (
+                                            {product.brandDetails && (
                                                 <div>
-                                                    <Label className="mb-2">SPV Brand</Label>
+                                                    <Label className="mb-2">Brand</Label>
                                                     <div className="p-3 bg-muted/50 rounded-md border border-border/30 text-sm">
-                                                        {product.spvBrand}
+                                                        {product.brandDetails.brandName}
                                                     </div>
                                                 </div>
                                             )}
