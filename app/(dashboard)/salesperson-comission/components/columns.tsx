@@ -20,24 +20,31 @@ interface RoleCommissionColumnsProps {
 
 export const createRoleCommissionColumns = ({ onEdit, onDelete }: RoleCommissionColumnsProps = {}): ColumnDef<RoleCommission>[] => [
     {
-        accessorKey: "level",
-        header: "Level",
+        accessorKey: "salesPersonId.name",
+        header: "Salesperson Name",
         cell: ({ row }) => (
-            <div className="font-medium">Level {row.getValue("level")}</div>
+            <div className="font-medium">{row.original.salesPersonId?.name || "N/A"}</div>
+        ),
+    },
+    {
+        accessorKey: "salesPersonId.email",
+        header: "Salesperson Email",
+        cell: ({ row }) => (
+            <div className="text-muted-foreground">{row.original.salesPersonId?.email || "N/A"}</div>
+        ),
+    },
+    {
+        accessorKey: "salesPersonId.phoneNumber",
+        header: "Phone Number",
+        cell: ({ row }) => (
+            <div className="font-medium">{row.original.salesPersonId?.phoneNumber || "N/A"}</div>
         ),
     },
     {
         accessorKey: "commissionPercentage",
-        header: "Commission %",
+        header: "Commission Percentage",
         cell: ({ row }) => (
             <div className="text-muted-foreground">{row.getValue("commissionPercentage")}%</div>
-        ),
-    },
-    {
-        accessorKey: "description",
-        header: "Description",
-        cell: ({ row }) => (
-            <div className="text-muted-foreground max-w-[200px] truncate">{row.getValue("description")}</div>
         ),
     },
     {
@@ -48,22 +55,10 @@ export const createRoleCommissionColumns = ({ onEdit, onDelete }: RoleCommission
             return (
                 <Badge
                     variant={status ? "default" : "secondary"}
-                    className={status ? "bg-green-100 text-green-800 border-green-200" : "bg-red-100 text-red-800 border-red-200"}
+                    className={status ? "bg-green-100 text-green-800 border-green-200" : "bg-red-100 text-red-800 border-green-200"}
                 >
                     {status ? "Active" : "Inactive"}
                 </Badge>
-            )
-        },
-    },
-    {
-        accessorKey: "createdAt",
-        header: "Created At",
-        cell: ({ row }) => {
-            const date = new Date(row.getValue("createdAt"))
-            return (
-                <div className="text-muted-foreground">
-                    {date.toLocaleDateString()}
-                </div>
             )
         },
     },

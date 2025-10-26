@@ -11,6 +11,9 @@ export async function getBrandsPaginated(params?: BrandPaginationParams): Promis
         if (params?.limit) {
             searchParams.append('limit', params.limit.toString())
         }
+        if (params?.productCategory) {
+            searchParams.append('productCategory', params.productCategory)
+        }
 
         const url = `${API_BASE_URL}/admin/brand${searchParams.toString() ? `?${searchParams.toString()}` : ''}`
 
@@ -32,9 +35,16 @@ export async function getBrandsPaginated(params?: BrandPaginationParams): Promis
 }
 
 // Get all brands (legacy function for backward compatibility)
-export async function getBrands(): Promise<Brand[]> {
+export async function getBrands(productCategory?: string): Promise<Brand[]> {
     try {
-        const response = await fetch(`${API_BASE_URL}/admin/brand`, {
+        const searchParams = new URLSearchParams()
+        if (productCategory) {
+            searchParams.append('productCategory', productCategory)
+        }
+
+        const url = `${API_BASE_URL}/admin/brand${searchParams.toString() ? `?${searchParams.toString()}` : ''}`
+
+        const response = await fetch(url, {
             method: 'GET',
             headers: getAuthHeaders(),
         })

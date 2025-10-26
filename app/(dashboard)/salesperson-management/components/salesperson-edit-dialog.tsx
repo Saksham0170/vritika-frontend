@@ -23,6 +23,7 @@ import { FileUpload } from "@/components/FileUpload"
 import { updateSalesperson } from "@/services/salesperson"
 import { Salesperson, UpdateSalespersonRequest } from "@/types/salesperson"
 import { UPLOAD_ENDPOINTS } from "@/services/upload"
+import { useToast } from "@/hooks/use-toast"
 
 interface SalespersonEditDialogProps {
     open: boolean
@@ -32,6 +33,7 @@ interface SalespersonEditDialogProps {
 }
 
 export function SalespersonEditDialog({ open, onClose, onSuccess, salesperson }: SalespersonEditDialogProps) {
+    const { toast } = useToast()
     const [saving, setSaving] = useState(false)
 
     const [formData, setFormData] = useState({
@@ -218,14 +220,21 @@ export function SalespersonEditDialog({ open, onClose, onSuccess, salesperson }:
                 updateData.cancelChequePhoto = formData.cancelChequePhoto.trim()
             }
 
-            console.log('Updating salesperson data from UI:', updateData)
-
             await updateSalesperson(salesperson._id, updateData)
+            toast({
+                title: "Success",
+                description: "Salesperson updated successfully",
+                variant: "success"
+            })
             onSuccess?.()
             onClose()
         } catch (error) {
             console.error('Error updating salesperson:', error)
-            alert(`Error updating salesperson: ${error instanceof Error ? error.message : 'Unknown error'}`)
+            toast({
+                title: "Error updating salesperson",
+                description: error instanceof Error ? error.message : 'Unknown error',
+                variant: "destructive"
+            })
         } finally {
             setSaving(false)
         }

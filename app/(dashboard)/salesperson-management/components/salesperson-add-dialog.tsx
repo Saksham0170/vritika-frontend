@@ -23,6 +23,7 @@ import { FileUpload } from "@/components/FileUpload"
 import { createSalesperson } from "@/services/salesperson"
 import { CreateSalespersonRequest } from "@/types/salesperson"
 import { UPLOAD_ENDPOINTS } from "@/services/upload"
+import { useToast } from "@/hooks/use-toast"
 
 
 interface SalespersonAddDialogProps {
@@ -32,6 +33,7 @@ interface SalespersonAddDialogProps {
 }
 
 export function SalespersonAddDialog({ open, onClose, onSuccess }: SalespersonAddDialogProps) {
+    const { toast } = useToast()
     const [saving, setSaving] = useState(false)
 
     const [formData, setFormData] = useState({
@@ -193,15 +195,22 @@ export function SalespersonAddDialog({ open, onClose, onSuccess }: SalespersonAd
                 createData.cancelChequePhoto = formData.cancelChequePhoto.trim()
             }
 
-            console.log('Submitting salesperson data from UI:', createData)
-
             await createSalesperson(createData)
+            toast({
+                title: "Success",
+                description: "Salesperson created successfully",
+                variant: "success"
+            })
             resetForm()
             onSuccess?.()
             onClose()
         } catch (error) {
             console.error('Error creating salesperson:', error)
-            alert(`Error creating salesperson: ${error instanceof Error ? error.message : 'Unknown error'}`)
+            toast({
+                title: "Error creating salesperson",
+                description: error instanceof Error ? error.message : 'Unknown error',
+                variant: "destructive"
+            })
         } finally {
             setSaving(false)
         }

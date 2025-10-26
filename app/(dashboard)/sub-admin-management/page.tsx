@@ -25,9 +25,7 @@ export default function SubAdminManagementPage() {
     const loadSubAdmins = async (page: number = currentPage, limit: number = pageSize) => {
         try {
             setLoading(true)
-            console.log('Loading sub admins...')
             const response = await getSubAdminsPaginated({ page, limit })
-            console.log('Received sub admin response in component:', response)
             setSubAdmins(response.data?.data || [])
             setTotalCount(response.data?.totalData || 0)
             setError(null)

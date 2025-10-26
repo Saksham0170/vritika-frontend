@@ -54,25 +54,14 @@ export async function uploadFile(file: File, endpoint: UploadEndpoint): Promise<
         const formData = new FormData()
         formData.append('file', file)
 
-        console.log('Uploading to URL:', `${API_BASE_URL}${endpoint}`)
-        console.log('File details:', {
-            name: file.name,
-            size: file.size,
-            type: file.type
-        })
-
         const response = await fetch(`${API_BASE_URL}${endpoint}`, {
             method: 'POST',
             headers: getFormDataAuthHeaders(),
             body: formData,
         })
 
-        console.log('Response status:', response.status)
-        console.log('Response headers:', Object.fromEntries(response.headers.entries()))
-
         // Get response text first to debug what we're receiving
         const responseText = await response.text()
-        console.log('Response text:', responseText.substring(0, 500)) // Log first 500 chars
 
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}: ${response.statusText}. Response: ${responseText.substring(0, 200)}`)

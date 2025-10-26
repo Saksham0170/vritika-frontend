@@ -8,6 +8,7 @@ import { Product, ProductType } from "@/types/product"
 import { ProductDetailDialog } from "./components/product-detail-dialog"
 import { ProductEditDialog } from "./components/product-edit-dialog"
 import { ProductAddDialog } from "./components/product-add-dialog"
+import { useToast } from "@/hooks/use-toast"
 import {
   Dialog,
   DialogContent,
@@ -37,6 +38,7 @@ const getActiveButtonClass = () => {
 }
 
 export default function ProductManagementPage() {
+  const { toast } = useToast()
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -118,9 +120,18 @@ export default function ProductManagementPage() {
       await deleteProduct(deletingProduct._id)
       setProducts((prev) => prev.filter((p) => p._id !== deletingProduct._id))
       setDeletingProduct(null)
+      toast({
+        title: "Success",
+        description: "Product deleted successfully",
+        variant: "success"
+      })
     } catch (error: unknown) {
       console.error("Error deleting product:", error)
-      // Handle error silently
+      toast({
+        title: "Error deleting product",
+        description: error instanceof Error ? error.message : 'Unknown error',
+        variant: "destructive"
+      })
     } finally {
       setIsDeleting(false)
     }

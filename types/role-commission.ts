@@ -1,5 +1,33 @@
+export interface SalesPersonInfo {
+    _id: string
+    name: string
+    email: string
+    phoneNumber: string
+    address: string
+    status: "Active" | "Inactive"
+}
+
+export interface SubAdminInfo {
+    _id: string
+    name: string
+    email: string
+    code: string
+    level: number
+}
+
+export interface AdminInfo {
+    _id: string
+    name: string
+    email: string
+    level?: number
+}
+
 export interface RoleCommission {
     _id: string
+    adminId?: AdminInfo
+    subAdminId?: SubAdminInfo
+    salesPersonId?: SalesPersonInfo
+    rootAdminId?: AdminInfo
     level: number
     commissionPercentage: number
     description: string
@@ -10,22 +38,21 @@ export interface RoleCommission {
 }
 
 export interface CreateRoleCommissionRequest {
-    level: number
+    subAdminId?: string
+    salesPersonId?: string
     commissionPercentage: number
     description: string
-    status: boolean
 }
 
 export interface UpdateRoleCommissionRequest {
-    level?: number
     commissionPercentage?: number
     description?: string
-    status?: boolean
 }
 
 export interface RoleCommissionPaginationParams {
     page?: number
     limit?: number
+    type?: 'sub-admin' | 'sales-person'
 }
 
 export interface PaginatedRoleCommissionsResponse {

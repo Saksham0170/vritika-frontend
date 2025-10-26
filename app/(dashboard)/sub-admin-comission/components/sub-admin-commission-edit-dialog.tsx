@@ -12,20 +12,19 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Checkbox } from "@/components/ui/checkbox"
-import { getRoleCommissionById, updateRoleCommission } from "@/services/role-commission"
+import { getRoleCommissionById, updateRoleCommissionById } from "@/services/role-commission"
 import { RoleCommission, UpdateRoleCommissionRequest } from "@/types/role-commission"
 import { useToast } from "@/hooks/use-toast"
 
 interface RoleCommissionEditDialogProps {
-    roleCommissionId: string | null
+    roleCommission: RoleCommission | null
     open: boolean
     onClose: () => void
     onSuccess: () => void
 }
 
 export function RoleCommissionEditDialog({
-    roleCommissionId,
+    roleCommission: initialRoleCommission,
     open,
     onClose,
     onSuccess,
@@ -37,23 +36,22 @@ export function RoleCommissionEditDialog({
     const { toast } = useToast()
 
     useEffect(() => {
-        if (roleCommissionId && open) {
+        if (initialRoleCommission && open) {
             const fetchRoleCommission = async () => {
                 try {
                     setFetchLoading(true)
-                    const data = await getRoleCommissionById(roleCommissionId)
+                    // Use sub-admin ID for GET request
+                    const data = await getRoleCommissionById(initialRoleCommission.subAdminId?._id || "")
                     setRoleCommission(data)
                     setFormData({
-                        level: data.level,
                         commissionPercentage: data.commissionPercentage,
                         description: data.description,
-                        status: data.status,
                     })
                 } catch (error) {
-                    console.error("Error fetching role commission:", error)
+                    console.error("Error fetching sub-admin commission:", error)
                     toast({
                         title: "Error",
-                        description: "Failed to load role commission details",
+                        description: "Failed to load commission data",
                         variant: "destructive",
                     })
                 } finally {
@@ -63,7 +61,7 @@ export function RoleCommissionEditDialog({
 
             fetchRoleCommission()
         }
-    }, [roleCommissionId, open, toast])
+    }, [initialRoleCommission, open])
 
     const handleClose = () => {
         onClose()
@@ -74,7 +72,7 @@ export function RoleCommissionEditDialog({
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
 
-        if (!roleCommissionId) return
+        if (!initialRoleCommission?._id) return
 
         if (formData.commissionPercentage !== undefined && (formData.commissionPercentage < 0 || formData.commissionPercentage > 100)) {
             toast({
@@ -85,29 +83,23 @@ export function RoleCommissionEditDialog({
             return
         }
 
-        if (formData.level !== undefined && formData.level < 1) {
-            toast({
-                title: "Error",
-                description: "Level must be at least 1",
-                variant: "destructive",
-            })
-            return
-        }
+
 
         try {
             setLoading(true)
-            await updateRoleCommission(roleCommissionId, formData)
+            // Use commission ID for PUT request
+            await updateRoleCommissionById(initialRoleCommission._id, formData)
             toast({
                 title: "Success",
-                description: "Role commission updated successfully",
+                description: "Commission updated successfully",
             })
             onSuccess()
             handleClose()
         } catch (error) {
-            console.error("Error updating role commission:", error)
+            console.error("Error updating commission:", error)
             toast({
                 title: "Error",
-                description: error instanceof Error ? error.message : "Failed to update role commission",
+                description: error instanceof Error ? error.message : "Failed to update commission",
                 variant: "destructive",
             })
         } finally {
@@ -127,9 +119,9 @@ export function RoleCommissionEditDialog({
     return (
         <Sheet open={open} onOpenChange={handleClose}>
             <SheetContent side="right"
-                className="w-[90vw] sm:w-[80vw] lg:w-[60vw] xl:w-[50vw] max-w-4xl overflow-y-auto rounded-2xl border border-border/40 bg-background text-foreground shadow-lg">
+                className="w-[90vw] sm:w-[70vw] lg:w-[50vw] xl:w-[30vw] max-w-4xl overflow-y-auto rounded-2xl border border-border/40 bg-background text-foreground shadow-lg">
                 <SheetHeader className="bg-zinc-100/70 dark:bg-background/70 backdrop-blur-md border-b border-border/40">
-                    <SheetTitle className="text-xl font-semibold py-0">Edit Role Commission</SheetTitle>
+                    <SheetTitle className="text-xl font-semibold py-0">Edit Sub-Admin Commission</SheetTitle>
                 </SheetHeader>
 
                 {fetchLoading ? (
@@ -141,29 +133,37 @@ export function RoleCommissionEditDialog({
                 ) : roleCommission ? (
                     <div className="py-4 px-6">
                         <form onSubmit={handleSubmit} className="space-y-6">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="level">Level</Label>
-                                    <Input
-                                        id="level"
-                                        type="number"
-                                        min="1"
-                                        value={formData.level ?? roleCommission.level}
-                                        onChange={(e) => handleInputChange("level", parseInt(e.target.value) || 1)}
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="commissionPercentage">Commission Percentage</Label>
-                                    <Input
-                                        id="commissionPercentage"
-                                        type="number"
-                                        min="0"
-                                        max="100"
-                                        step="0.1"
-                                        value={formData.commissionPercentage ?? roleCommission.commissionPercentage}
-                                        onChange={(e) => handleInputChange("commissionPercentage", parseFloat(e.target.value) || 0)}
-                                    />
-                                </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="subAdminName">Sub Admin Name</Label>
+                                <Input
+                                    id="subAdminName"
+                                    value={roleCommission.subAdminId?.name || "N/A"}
+                                    disabled
+                                    className="bg-muted/50"
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="subAdminEmail">Sub Admin Email</Label>
+                                <Input
+                                    id="subAdminEmail"
+                                    value={roleCommission.subAdminId?.email || "N/A"}
+                                    disabled
+                                    className="bg-muted/50"
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="commissionPercentage">Commission Percentage</Label>
+                                <Input
+                                    id="commissionPercentage"
+                                    type="number"
+                                    min="0"
+                                    max="100"
+                                    step="0.1"
+                                    value={formData.commissionPercentage ?? roleCommission.commissionPercentage}
+                                    onChange={(e) => handleInputChange("commissionPercentage", parseFloat(e.target.value) || 0)}
+                                />
                             </div>
 
                             <div className="space-y-2">
@@ -176,22 +176,13 @@ export function RoleCommissionEditDialog({
                                 />
                             </div>
 
-                            <div className="flex items-center space-x-2">
-                                <Checkbox
-                                    id="status"
-                                    checked={formData.status ?? roleCommission.status}
-                                    onCheckedChange={(checked: boolean) => handleInputChange("status", checked)}
-                                />
-                                <Label htmlFor="status">Active</Label>
-                            </div>
-
                             <SheetFooter className="mt-6">
-                                <div className="flex justify-end space-x-2 w-full">
+                                <div className="flex justify-end space-x-3 w-full">
                                     <Button type="button" variant="outline" onClick={handleClose}>
                                         Cancel
                                     </Button>
                                     <Button type="submit" disabled={loading}>
-                                        {loading ? "Updating..." : "Update Role Commission"}
+                                        {loading ? "Updating..." : "Update Commission"}
                                     </Button>
                                 </div>
                             </SheetFooter>

@@ -9,19 +9,19 @@ import {
 } from "@/components/ui/sheet"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { getRoleCommissionById } from "@/services/role-commission"
+import { getRoleCommissionBySalesPersonId } from "@/services/role-commission"
 import { RoleCommission } from "@/types/role-commission"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Label } from "@/components/ui/label"
 
 interface RoleCommissionDetailDialogProps {
-    roleCommissionId: string | null
+    salesPersonId: string | null
     open: boolean
     onClose: () => void
 }
 
 export function RoleCommissionDetailDialog({
-    roleCommissionId,
+    salesPersonId,
     open,
     onClose,
 }: RoleCommissionDetailDialogProps) {
@@ -30,16 +30,16 @@ export function RoleCommissionDetailDialog({
     const [error, setError] = useState<string | null>(null)
 
     useEffect(() => {
-        if (roleCommissionId && open) {
+        if (salesPersonId && open) {
             const fetchRoleCommission = async () => {
                 try {
                     setLoading(true)
                     setError(null)
-                    const data = await getRoleCommissionById(roleCommissionId)
+                    const data = await getRoleCommissionBySalesPersonId(salesPersonId)
                     setRoleCommission(data)
                 } catch (err) {
-                    setError(err instanceof Error ? err.message : "Failed to load role commission details")
-                    console.error("Error fetching role commission:", err)
+                    setError(err instanceof Error ? err.message : "Failed to load salesperson commission details")
+                    console.error("Error fetching salesperson commission:", err)
                 } finally {
                     setLoading(false)
                 }
@@ -47,7 +47,7 @@ export function RoleCommissionDetailDialog({
 
             fetchRoleCommission()
         }
-    }, [roleCommissionId, open])
+    }, [salesPersonId, open])
 
     const handleClose = () => {
         onClose()
@@ -62,7 +62,7 @@ export function RoleCommissionDetailDialog({
             <SheetContent side="right"
                 className="w-[90vw] sm:w-[80vw] lg:w-[60vw] xl:w-[50vw] max-w-4xl overflow-y-auto rounded-2xl border border-border/40 bg-zinc-100 dark:bg-background text-foreground shadow-lg">
                 <SheetHeader className="bg-zinc-100/70 dark:bg-background/70 backdrop-blur-md border-b border-border/40">
-                    <SheetTitle className="text-xl font-semibold py-0">Role Commission Details</SheetTitle>
+                    <SheetTitle className="text-xl font-semibold py-0">Salesperson Commission Details</SheetTitle>
                 </SheetHeader>
 
                 {loading ? (
@@ -78,6 +78,61 @@ export function RoleCommissionDetailDialog({
                     </div>
                 ) : roleCommission ? (
                     <div className="space-y-8 py-4 px-6">
+                        {/* Salesperson Details */}
+                        <section className="rounded-xl border border-border/50 dark:border-border/60 bg-card/30 dark:bg-card/50 p-6 space-y-6 shadow-sm">
+                            <h2 className="text-lg font-medium text-foreground/80 tracking-tight">
+                                Salesperson Details
+                            </h2>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <Label className="mb-2">Salesperson Name</Label>
+                                    <div className="p-3 bg-muted/50 rounded-md border border-border/30 text-sm font-medium">
+                                        {roleCommission.salesPersonId?.name || "N/A"}
+                                    </div>
+                                </div>
+                                <div>
+                                    <Label className="mb-2">Salesperson Email</Label>
+                                    <div className="p-3 bg-muted/50 rounded-md border border-border/30 text-sm">
+                                        {roleCommission.salesPersonId?.email || "N/A"}
+                                    </div>
+                                </div>
+                                <div>
+                                    <Label className="mb-2">Phone Number</Label>
+                                    <div className="p-3 bg-muted/50 rounded-md border border-border/30 text-sm font-medium">
+                                        {roleCommission.salesPersonId?.phoneNumber || "N/A"}
+                                    </div>
+                                </div>
+                                <div>
+                                    <Label className="mb-2">Address</Label>
+                                    <div className="p-3 bg-muted/50 rounded-md border border-border/30 text-sm font-medium">
+                                        {roleCommission.salesPersonId?.address || "N/A"}
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* Root Admin Details */}
+                        <section className="rounded-xl border border-border/50 dark:border-border/60 bg-card/30 dark:bg-card/50 p-6 space-y-6 shadow-sm">
+                            <h2 className="text-lg font-medium text-foreground/80 tracking-tight">
+                                Root Admin Details
+                            </h2>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <Label className="mb-2">Root Admin Name</Label>
+                                    <div className="p-3 bg-muted/50 rounded-md border border-border/30 text-sm font-medium">
+                                        {roleCommission.rootAdminId?.name || "N/A"}
+                                    </div>
+                                </div>
+                                <div>
+                                    <Label className="mb-2">Root Admin Email</Label>
+                                    <div className="p-3 bg-muted/50 rounded-md border border-border/30 text-sm">
+                                        {roleCommission.rootAdminId?.email || "N/A"}
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* Commission Details */}
                         <section className="rounded-xl border border-border/50 dark:border-border/60 bg-card/30 dark:bg-card/50 p-6 space-y-6 shadow-sm">
                             <h2 className="text-lg font-medium text-foreground/80 tracking-tight">
                                 Commission Details

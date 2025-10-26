@@ -22,6 +22,7 @@ import {
 import { MultiSelect, type MultiSelectOption } from "@/components/ui/multiselect"
 import { createBrand } from "@/services/brand"
 import { CreateBrandRequest } from "@/types/brand"
+import { useToast } from "@/hooks/use-toast"
 
 
 interface BrandAddDialogProps {
@@ -47,6 +48,7 @@ const categoryOptions: MultiSelectOption[] = [
 ]
 
 export function BrandAddDialog({ open, onClose, onSuccess }: BrandAddDialogProps) {
+    const { toast } = useToast()
     const [saving, setSaving] = useState(false)
 
     const [formData, setFormData] = useState({
@@ -139,6 +141,12 @@ export function BrandAddDialog({ open, onClose, onSuccess }: BrandAddDialogProps
 
             await createBrand(brandData)
 
+            toast({
+                title: "Success",
+                description: "Brand created successfully",
+                variant: "success"
+            })
+
             // Reset form
             setFormData({
                 brandName: "",
@@ -151,7 +159,11 @@ export function BrandAddDialog({ open, onClose, onSuccess }: BrandAddDialogProps
             onClose()
         } catch (error: unknown) {
             console.error("Error creating brand:", error)
-            // Handle error silently
+            toast({
+                title: "Error creating brand",
+                description: error instanceof Error ? error.message : 'Unknown error',
+                variant: "destructive"
+            })
         } finally {
             setSaving(false)
         }

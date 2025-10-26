@@ -26,7 +26,6 @@ export async function getSalespersonsPaginated(params?: SalespersonPaginationPar
         }
 
         const data = await response.json()
-        console.log('Response data from getSalespersonsPaginated:', data)
         return data
     } catch (error) {
         console.error('Error fetching salespersons:', error)
@@ -48,7 +47,6 @@ export async function getSalespersons(): Promise<Salesperson[]> {
 
         const data = await response.json()
         const salespersonArray = data.data?.data
-        console.log('Fetched salespersons:', salespersonArray)
         return salespersonArray
     } catch (error) {
         console.error('Error fetching salespersons:', error)
@@ -79,24 +77,18 @@ export async function getSalespersonById(id: string): Promise<Salesperson> {
 // Create new salesperson
 export async function createSalesperson(salespersonData: CreateSalespersonRequest): Promise<Salesperson> {
     try {
-        console.log('Creating salesperson with data:', salespersonData)
-
         const response = await fetch(`${API_BASE_URL}/admin/sales-persons`, {
             method: 'POST',
             headers: getAuthHeaders(),
             body: JSON.stringify(salespersonData),
         })
 
-        console.log('Create salesperson response status:', response.status)
-
         if (!response.ok) {
             const errorText = await response.text()
-            console.error('Create salesperson error response:', errorText)
             throw new Error(`Failed to create salesperson: ${response.status} ${response.statusText} - ${errorText}`)
         }
 
         const data = await response.json()
-        console.log('Create salesperson success response:', data)
         return data.data || data
     } catch (error) {
         console.error('Error creating salesperson:', error)

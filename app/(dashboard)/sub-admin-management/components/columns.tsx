@@ -41,6 +41,52 @@ export const createSubAdminColumns = ({ onEdit, onDelete }: SubAdminColumnsProps
         ),
     },
     {
+        accessorKey: "level",
+        header: "Agent Level",
+        cell: ({ row }) => {
+            const level = row.getValue("level") as number
+            const levelConfig = {
+                1: {
+                    color: "bg-rose-100 text-rose-900 border-rose-200 dark:bg-rose-950/30 dark:text-rose-300 dark:border-rose-800/30",
+                    label: "Agent-1",
+                },
+                2: {
+                    color: "bg-amber-100 text-amber-900 border-amber-200 dark:bg-amber-950/30 dark:text-amber-300 dark:border-amber-800/30",
+                    label: "Agent-2",
+                },
+                3: {
+                    color: "bg-emerald-100 text-emerald-900 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-300 dark:border-emerald-800/30",
+                    label: "Agent-3",
+                },
+                4: {
+                    color: "bg-cyan-100 text-cyan-900 border-cyan-200 dark:bg-cyan-950/30 dark:text-cyan-300 dark:border-cyan-800/30",
+                    label: "Agent-4",
+                },
+                5: {
+                    color: "bg-violet-100 text-violet-900 border-violet-200 dark:bg-violet-950/30 dark:text-violet-300 dark:border-violet-800/30",
+                    label: "Agent-5",
+                }
+            }
+
+            const config = levelConfig[level as keyof typeof levelConfig]
+
+            if (!config) {
+                return <div className="text-muted-foreground">Level {level}</div>
+            }
+
+            return (
+                <div className="flex items-center gap-2">
+                    <Badge
+                        variant="outline"
+                        className={`text-xs font-medium ${config.color}`}
+                    >
+                        {config.label}
+                    </Badge>
+                </div>
+            )
+        },
+    },
+    {
         accessorKey: "adminType",
         header: "Admin Type",
         cell: ({ row }) => {

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { X, Upload, Eye, AlertCircle } from "lucide-react"
 import { uploadFile, UploadEndpoint } from "@/services/upload"
 import { cn } from "@/lib/utils"
+import { useToast } from "@/hooks/use-toast"
 
 interface FileUploadProps {
     value?: string
@@ -28,6 +29,7 @@ export function FileUpload({
     label = "Upload Image",
     className
 }: FileUploadProps) {
+    const { toast } = useToast()
     const [isUploading, setIsUploading] = useState(false)
     const [uploadProgress, setUploadProgress] = useState(0)
     const [files, setFiles] = useState<File[]>([])
@@ -72,7 +74,13 @@ export function FileUpload({
             setIsUploading(false)
             setUploadProgress(0)
             setFiles([])
-            setError(error instanceof Error ? error.message : 'Upload failed. Please try again.')
+            const errorMessage = error instanceof Error ? error.message : 'Upload failed. Please try again.'
+            setError(errorMessage)
+            toast({
+                title: "Upload failed",
+                description: errorMessage,
+                variant: "destructive"
+            })
         }
     }
 

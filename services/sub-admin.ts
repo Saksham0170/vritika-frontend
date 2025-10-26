@@ -26,7 +26,6 @@ export async function getSubAdminsPaginated(params?: SubAdminPaginationParams): 
         }
 
         const data = await response.json()
-        console.log('Response data from getSubAdminsPaginated:', data)
         return data
     } catch (error) {
         console.error('Error fetching sub-admins:', error)
@@ -48,7 +47,6 @@ export async function getSubAdmins(): Promise<SubAdmin[]> {
 
         const data = await response.json()
         const subAdminArray = data.data?.data
-        console.log('Fetched sub-admins:', subAdminArray)
         return subAdminArray
     } catch (error) {
         console.error('Error fetching sub-admins:', error)
@@ -79,24 +77,18 @@ export async function getSubAdminById(id: string): Promise<SubAdmin> {
 // Create new sub-admin
 export async function createSubAdmin(subAdminData: CreateSubAdminRequest): Promise<SubAdmin> {
     try {
-        console.log('Creating sub-admin with data:', subAdminData)
-
         const response = await fetch(`${API_BASE_URL}/admin/sub-admin`, {
             method: 'POST',
             headers: getAuthHeaders(),
             body: JSON.stringify(subAdminData),
         })
 
-        console.log('Create sub-admin response status:', response.status)
-
         if (!response.ok) {
             const errorText = await response.text()
-            console.error('Create sub-admin error response:', errorText)
             throw new Error(`Failed to create sub-admin: ${response.status} ${response.statusText} - ${errorText}`)
         }
 
         const data = await response.json()
-        console.log('Create sub-admin success response:', data)
         return data.data || data
     } catch (error) {
         console.error('Error creating sub-admin:', error)

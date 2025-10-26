@@ -9,6 +9,7 @@ import {
   IconPackage,
   IconUserCheck,
   IconCoins,
+  IconTicket,
 } from "@tabler/icons-react"
 
 import { useUserStore } from "@/store/userStore"
@@ -67,8 +68,18 @@ const adminNavMain = [
     icon: IconUserCheck,
   },
   {
-    title: "Role Commission",
-    url: "/role-commission",
+    title: "Coupon Management",
+    url: "/coupon-management",
+    icon: IconTicket,
+  },
+  {
+    title: "Sub-Admin Commission",
+    url: "/sub-admin-comission",
+    icon: IconCoins,
+  },
+  {
+    title: "Salesperson Commission",
+    url: "/salesperson-comission",
     icon: IconCoins,
   },
 ]
@@ -89,6 +100,11 @@ const subAdminNavMain = [
     title: "Salesperson Management",
     url: "/salesperson-management",
     icon: IconUserCheck,
+  },
+  {
+    title: "Salesperson Commission",
+    url: "/salesperson-comission",
+    icon: IconCoins,
   },
 ]
 

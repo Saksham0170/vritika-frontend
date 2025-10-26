@@ -36,4 +36,5 @@ export interface PaginatedBrandsResponse {
 export interface BrandPaginationParams {
     page?: number
     limit?: number
+    productCategory?: string
 }

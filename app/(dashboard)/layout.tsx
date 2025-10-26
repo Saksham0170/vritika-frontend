@@ -1,6 +1,7 @@
 import { AppSidebar } from "@/components/app-sidebar"
 import { SiteHeader } from "@/components/site-header"
 import { AuthGuard } from "@/components/auth-guard"
+import { Toaster } from "@/components/ui/sonner"
 import {
     SidebarInset,
     SidebarProvider,
@@ -33,6 +34,7 @@ export default function DashboardLayout({
                     </div>
                 </SidebarInset>
             </SidebarProvider>
+            <Toaster />
         </AuthGuard>
     )
 }

@@ -20,6 +20,8 @@ import {
 } from "@/components/ui/select"
 import { FileUpload } from "@/components/FileUpload"
 import { createProduct } from "@/services/product"
+import { getBrands } from "@/services/brand"
+import { Brand } from "@/types/brand"
 import {
     CreateProductRequest,
     ProductType,
@@ -31,6 +33,7 @@ import {
     Unit
 } from "@/types/product"
 import { UPLOAD_ENDPOINTS } from "@/services/upload"
+import { useToast } from "@/hooks/use-toast"
 
 interface ProductAddDialogProps {
     open: boolean
@@ -96,7 +99,10 @@ const unitOptions = [
 ]
 
 export function ProductAddDialog({ open, onClose, onSuccess, selectedType }: ProductAddDialogProps) {
+    const { toast } = useToast()
     const [saving, setSaving] = useState(false)
+    const [brands, setBrands] = useState<Brand[]>([])
+    const [loadingBrands, setLoadingBrands] = useState(false)
 
     const [formData, setFormData] = useState({
         productName: "",
@@ -105,7 +111,7 @@ export function ProductAddDialog({ open, onClose, onSuccess, selectedType }: Pro
         sellinPrice: "",
         // Optional fields based on product type
         image: "",
-        spvBrand: "",
+        spvBrand: "", // This will now store the brand ID
         spvType: "",
         phase: "",
         capacity: "",
@@ -135,6 +141,34 @@ export function ProductAddDialog({ open, onClose, onSuccess, selectedType }: Pro
             }))
         }
     }, [selectedType, formData.type])
+
+    // Load brands when product type changes
+    useEffect(() => {
+        if (formData.type && shouldShowBrandField(formData.type)) {
+            loadBrands(formData.type)
+        }
+    }, [formData.type])
+
+    const shouldShowBrandField = (type: string) => {
+        return ["Solar Module", "Inverter", "Batteries"].includes(type)
+    }
+
+    const loadBrands = async (productCategory: string) => {
+        try {
+            setLoadingBrands(true)
+            const brandsData = await getBrands(productCategory)
+            setBrands(brandsData || [])
+        } catch (error) {
+            console.error('Error loading brands:', error)
+            toast({
+                title: "Error",
+                description: "Failed to load brands",
+                variant: "destructive"
+            })
+        } finally {
+            setLoadingBrands(false)
+        }
+    }
 
     const handleInputChange = (field: keyof typeof formData, value: string) => {
         setFormData(prev => ({
@@ -218,6 +252,12 @@ export function ProductAddDialog({ open, onClose, onSuccess, selectedType }: Pro
 
             await createProduct(productData)
 
+            toast({
+                title: "Success",
+                description: "Product created successfully",
+                variant: "success"
+            })
+
             // Reset form
             setFormData({
                 productName: "",
@@ -244,7 +284,11 @@ export function ProductAddDialog({ open, onClose, onSuccess, selectedType }: Pro
             onClose()
         } catch (error: unknown) {
             console.error("Error creating product:", error)
-            // Handle error silently
+            toast({
+                title: "Error creating product",
+                description: error instanceof Error ? error.message : 'Unknown error',
+                variant: "destructive"
+            })
         } finally {
             setSaving(false)
         }
@@ -279,6 +323,7 @@ export function ProductAddDialog({ open, onClose, onSuccess, selectedType }: Pro
             price: "",
             sellinPrice: ""
         })
+        setBrands([])
         onClose()
     }
 
@@ -288,15 +333,25 @@ export function ProductAddDialog({ open, onClose, onSuccess, selectedType }: Pro
                 return (
                     <>
                         <div>
-                            <Label htmlFor="spvBrand" className="mb-2">
+                            <Label className="mb-2">
                                 SPV Brand <span className="text-red-500">*</span>
                             </Label>
-                            <Input
-                                id="spvBrand"
+                            <Select
                                 value={formData.spvBrand}
-                                onChange={(e) => handleInputChange("spvBrand", e.target.value)}
-                                placeholder="Enter SPV brand"
-                            />
+                                onValueChange={(value) => handleInputChange("spvBrand", value)}
+                                disabled={loadingBrands}
+                            >
+                                <SelectTrigger className="w-full">
+                                    <SelectValue placeholder={loadingBrands ? "Loading brands..." : "Select SPV brand"} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {brands.map((brand) => (
+                                        <SelectItem key={brand._id} value={brand._id}>
+                                            {brand.brandName}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </div>
                         <div>
                             <Label className="mb-2">
@@ -356,15 +411,25 @@ export function ProductAddDialog({ open, onClose, onSuccess, selectedType }: Pro
                 return (
                     <>
                         <div>
-                            <Label htmlFor="spvBrand" className="mb-2">
+                            <Label className="mb-2">
                                 SPV Brand <span className="text-red-500">*</span>
                             </Label>
-                            <Input
-                                id="spvBrand"
+                            <Select
                                 value={formData.spvBrand}
-                                onChange={(e) => handleInputChange("spvBrand", e.target.value)}
-                                placeholder="Enter SPV brand"
-                            />
+                                onValueChange={(value) => handleInputChange("spvBrand", value)}
+                                disabled={loadingBrands}
+                            >
+                                <SelectTrigger className="w-full">
+                                    <SelectValue placeholder={loadingBrands ? "Loading brands..." : "Select SPV brand"} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {brands.map((brand) => (
+                                        <SelectItem key={brand._id} value={brand._id}>
+                                            {brand.brandName}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </div>
                         <div>
                             <Label className="mb-2">
@@ -424,15 +489,25 @@ export function ProductAddDialog({ open, onClose, onSuccess, selectedType }: Pro
                 return (
                     <>
                         <div>
-                            <Label htmlFor="spvBrand" className="mb-2">
+                            <Label className="mb-2">
                                 SPV Brand <span className="text-red-500">*</span>
                             </Label>
-                            <Input
-                                id="spvBrand"
+                            <Select
                                 value={formData.spvBrand}
-                                onChange={(e) => handleInputChange("spvBrand", e.target.value)}
-                                placeholder="Enter SPV brand"
-                            />
+                                onValueChange={(value) => handleInputChange("spvBrand", value)}
+                                disabled={loadingBrands}
+                            >
+                                <SelectTrigger className="w-full">
+                                    <SelectValue placeholder={loadingBrands ? "Loading brands..." : "Select SPV brand"} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {brands.map((brand) => (
+                                        <SelectItem key={brand._id} value={brand._id}>
+                                            {brand.brandName}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </div>
                         <div>
                             <Label className="mb-2">

@@ -1,23 +1,29 @@
 "use client"
 
-import { useState } from "react"
+import { toast as sonnerToast } from "sonner"
 
 interface ToastProps {
     title: string
     description?: string
-    variant?: "default" | "destructive"
+    variant?: "default" | "destructive" | "success"
 }
 
 export function useToast() {
-    const [toasts] = useState<ToastProps[]>([])
-
     const toast = (props: ToastProps) => {
-        if (props.variant === "destructive") {
-            alert(`Error: ${props.title}${props.description ? ` - ${props.description}` : ""}`)
-        } else {
-            alert(`${props.title}${props.description ? ` - ${props.description}` : ""}`)
+        const message = props.description ? `${props.title}: ${props.description}` : props.title
+
+        switch (props.variant) {
+            case "destructive":
+                sonnerToast.error(message)
+                break
+            case "success":
+                sonnerToast.success(message)
+                break
+            default:
+                sonnerToast(message)
+                break
         }
     }
 
-    return { toast, toasts }
+    return { toast, toasts: [] }
 }

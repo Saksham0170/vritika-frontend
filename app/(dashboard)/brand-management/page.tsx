@@ -8,6 +8,7 @@ import { Brand } from "@/types/brand"
 import { BrandDetailDialog } from "./components/brand-detail-dialog"
 import { BrandEditDialog } from "./components/brand-edit-dialog"
 import { BrandAddDialog } from "./components/brand-add-dialog"
+import { useToast } from "@/hooks/use-toast"
 import {
   Dialog,
   DialogContent,
@@ -19,6 +20,7 @@ import { Button } from "@/components/ui/button"
 
 
 export default function BrandManagementPage() {
+  const { toast } = useToast()
   const [brands, setBrands] = useState<Brand[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -88,9 +90,18 @@ export default function BrandManagementPage() {
       await deleteBrand(deletingBrand._id)
       setBrands((prev) => prev.filter((b) => b._id !== deletingBrand._id))
       setDeletingBrand(null)
+      toast({
+        title: "Success",
+        description: "Brand deleted successfully",
+        variant: "success"
+      })
     } catch (error: unknown) {
       console.error("Error deleting brand:", error)
-      // Handle error silently
+      toast({
+        title: "Error deleting brand",
+        description: error instanceof Error ? error.message : 'Unknown error',
+        variant: "destructive"
+      })
     } finally {
       setIsDeleting(false)
     }

@@ -25,9 +25,7 @@ export default function AdminManagementPage() {
   const loadAdmins = async (page: number = currentPage, limit: number = pageSize) => {
     try {
       setLoading(true)
-      console.log('Loading admins...')
       const response = await getAdminsPaginated({ page, limit })
-      console.log('Received admin response in component:', response)
       setAdmins(response.data?.data || [])
       setTotalCount(response.data?.totalData || 0)
       setError(null)

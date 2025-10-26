@@ -332,7 +332,7 @@ export function DataTable<TData, TValue>({
       <div className="flex items-center justify-between px-6 py-4 border-t border-border">
         <div className="flex-1 text-sm text-muted-foreground">
           {paginationMode === 'server' && totalCount !== undefined && (
-            <span>
+            <span className="hidden sm:inline">
               Showing {((currentPage - 1) * pageSize) + 1} to{" "}
               {Math.min(currentPage * pageSize, totalCount)} of {totalCount} results
             </span>

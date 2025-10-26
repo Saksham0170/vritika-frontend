@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select"
 import { createSubAdmin } from "@/services/sub-admin"
 import { CreateSubAdminRequest } from "@/types/sub-admin"
+import { useToast } from "@/hooks/use-toast"
 
 
 interface SubAdminAddDialogProps {
@@ -30,6 +31,7 @@ interface SubAdminAddDialogProps {
 }
 
 export function SubAdminAddDialog({ open, onClose, onSuccess }: SubAdminAddDialogProps) {
+    const { toast } = useToast()
     const [saving, setSaving] = useState(false)
 
     const [formData, setFormData] = useState({
@@ -237,31 +239,22 @@ export function SubAdminAddDialog({ open, onClose, onSuccess }: SubAdminAddDialo
                 createData.passbookImage = formData.passbookImage.trim()
             }
 
-            console.log('Submitting sub-admin data from UI:', createData)
-            console.log('Postman equivalent data:', {
-                "name": "Sub Admin Name",
-                "email": "subadmin@example.com",
-                "phone": "9876543210",
-                "password": "SubAdmin@123",
-                "adminType": "Organisation",
-                "gstNo": "27AABCU9603R1ZM",
-                "contactPersonName": "Contact Person",
-                "address": "123 Street, City",
-                "aadharCardNo": "1234-5678-9012",
-                "panCardNo": "ABCDE1234F",
-                "bankAccountNo": "123456789012",
-                "ifscCode": "SBIN0001234",
-                "bankHolderName": "Sub Admin Name"
-            })
-
             await createSubAdmin(createData)
+            toast({
+                title: "Success",
+                description: "Sub-admin created successfully",
+                variant: "success"
+            })
             resetForm()
             onSuccess?.()
             onClose()
         } catch (error) {
             console.error('Error creating sub-admin:', error)
-            // You might want to show this error to the user
-            alert(`Error creating sub-admin: ${error instanceof Error ? error.message : 'Unknown error'}`)
+            toast({
+                title: "Error creating sub-admin",
+                description: error instanceof Error ? error.message : 'Unknown error',
+                variant: "destructive"
+            })
         } finally {
             setSaving(false)
         }

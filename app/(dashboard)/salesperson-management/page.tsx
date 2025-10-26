@@ -8,8 +8,10 @@ import { Salesperson } from "@/types/salesperson"
 import { SalespersonDetailDialog } from "./components/salesperson-detail-dialog"
 import { SalespersonEditDialog } from "./components/salesperson-edit-dialog"
 import { SalespersonAddDialog } from "./components/salesperson-add-dialog"
+import { useToast } from "@/hooks/use-toast"
 
 export default function SalespersonManagementPage() {
+  const { toast } = useToast()
   const [salespersons, setSalespersons] = useState<Salesperson[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -75,10 +77,19 @@ export default function SalespersonManagementPage() {
 
     try {
       await deleteSalesperson(salesperson._id)
+      toast({
+        title: "Success",
+        description: "Salesperson deleted successfully",
+        variant: "success"
+      })
       await loadSalespersons() // Reload the list
     } catch (error) {
       console.error("Error deleting salesperson:", error)
-      alert(`Error deleting salesperson: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      toast({
+        title: "Error deleting salesperson",
+        description: error instanceof Error ? error.message : 'Unknown error',
+        variant: "destructive"
+      })
     }
   }
 
