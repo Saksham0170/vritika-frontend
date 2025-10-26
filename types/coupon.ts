@@ -71,7 +71,9 @@ export interface UpdateCouponRequest {
 
 export interface SalesPersonListResponse {
     status: boolean
-    data: SalesPerson[]
+    data: {
+        data: SalesPerson[]
+    }
     message: string
 }
 

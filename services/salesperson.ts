@@ -46,7 +46,15 @@ export async function getSalespersons(): Promise<Salesperson[]> {
         }
 
         const data = await response.json()
-        const salespersonArray = data.data?.data
+        // Handle different response structures
+        const salespersonArray = data.data?.data || data.data || []
+
+        // Ensure we always return an array
+        if (!Array.isArray(salespersonArray)) {
+            console.warn('Expected salesperson data to be an array, got:', typeof salespersonArray)
+            return []
+        }
+
         return salespersonArray
     } catch (error) {
         console.error('Error fetching salespersons:', error)

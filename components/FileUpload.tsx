@@ -253,27 +253,12 @@ export function FileUpload({
 
             {(hasUploadedImage || hasPreviewImage) && (
                 <div className="flex gap-2">
-                    {hasUploadedImage && (
-                        <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={openImagePreview}
-                            className="flex-1"
-                        >
-                            <Eye className="h-4 w-4 mr-2" />
-                            Preview
-                        </Button>
-                    )}
                     <Button
                         type="button"
                         variant="outline"
                         size="sm"
                         onClick={handleRemove}
-                        className={cn(
-                            "text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-950",
-                            hasUploadedImage ? "flex-1" : "w-full"
-                        )}
+                        className="w-full text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-950"
                     >
                         <X className="h-4 w-4 mr-2" />
                         Remove

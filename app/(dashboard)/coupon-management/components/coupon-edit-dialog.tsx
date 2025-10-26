@@ -88,10 +88,11 @@ export function CouponEditDialog({ couponId, open, onClose, onSuccess }: CouponE
             ])
                 .then(([couponData, salesPersonsResponse]) => {
                     setCoupon(couponData)
-                    setSalesPersons(salesPersonsResponse.data || [])
+                    const salesPersonsData = salesPersonsResponse.data?.data || []
+                    setSalesPersons(salesPersonsData)
 
                     // Set up sales person options
-                    const options = salesPersonsResponse.data.map(person => ({
+                    const options = salesPersonsData.map(person => ({
                         value: person._id,
                         label: `${person.name} (${person.email})`
                     }))

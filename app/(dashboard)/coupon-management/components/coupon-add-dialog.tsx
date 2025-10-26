@@ -75,9 +75,10 @@ export function CouponAddDialog({ open, onClose, onSuccess }: CouponAddDialogPro
     const loadSalesPersons = async () => {
         try {
             const response = await getSalesPersons()
-            setSalesPersons(response.data || [])
+            const salesPersonsData = response.data?.data || []
+            setSalesPersons(salesPersonsData)
 
-            const options = response.data.map(person => ({
+            const options = salesPersonsData.map(person => ({
                 value: person._id,
                 label: `${person.name} (${person.email})`
             }))

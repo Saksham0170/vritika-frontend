@@ -71,7 +71,7 @@ export const panSchema = z.string()
 
 export const aadhaarSchema = z.string()
   .min(12, "Aadhaar must be 12 digits")
-  .max(14, "Aadhaar must be 12 digits (spaces allowed)")
+  .max(12, "Aadhaar must be 12 digits")
   .refine(isValidAadhaar, "Please enter a valid Aadhaar number")
 
 export const ifscSchema = z.string()
