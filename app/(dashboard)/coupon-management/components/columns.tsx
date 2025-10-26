@@ -56,27 +56,6 @@ export const createCouponColumns = ({ onEdit, onDelete, onManageSalespeople }: C
         ),
     },
     {
-        accessorKey: "assignedSalesPersons",
-        header: "Assigned Sales",
-        cell: ({ row }) => {
-            const salesPersons = row.getValue("assignedSalesPersons") as any[]
-            return (
-                <div className="flex flex-wrap gap-1">
-                    {salesPersons.slice(0, 2).map((person, index) => (
-                        <Badge key={index} variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/30 dark:text-blue-300 dark:border-blue-800/30">
-                            {person.name}
-                        </Badge>
-                    ))}
-                    {salesPersons.length > 2 && (
-                        <Badge variant="outline" className="text-xs bg-muted text-muted-foreground border-border">
-                            +{salesPersons.length - 2}
-                        </Badge>
-                    )}
-                </div>
-            )
-        },
-    },
-    {
         accessorKey: "validFrom",
         header: "Valid From",
         cell: ({ row }) => {
