@@ -36,7 +36,7 @@ export async function getSalespersonsPaginated(params?: SalespersonPaginationPar
 // Get all salespersons
 export async function getSalespersons(): Promise<Salesperson[]> {
     try {
-        const response = await fetch(`${API_BASE_URL}/admin/sales-persons`, {
+        const response = await fetch(`${API_BASE_URL}/admin/sales-persons?limit=1000`, {
             method: 'GET',
             headers: getAuthHeaders(),
         })

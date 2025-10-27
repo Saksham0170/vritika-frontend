@@ -36,7 +36,7 @@ export async function getSubAdminsPaginated(params?: SubAdminPaginationParams): 
 // Get all sub-admins
 export async function getSubAdmins(): Promise<SubAdmin[]> {
     try {
-        const response = await fetch(`${API_BASE_URL}/admin/sub-admin`, {
+        const response = await fetch(`${API_BASE_URL}/admin/sub-admin?limit=1000`, {
             method: 'GET',
             headers: getAuthHeaders(),
         })
