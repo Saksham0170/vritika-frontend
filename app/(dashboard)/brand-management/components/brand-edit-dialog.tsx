@@ -314,7 +314,6 @@ export function BrandEditDialog({ brandId, open, onClose, onSuccess }: BrandEdit
                                                 }
                                             }}
                                             placeholder="Select product categories..."
-                                            searchPlaceholder="Search categories..."
                                             disabled={saving}
                                         />
                                     </div>

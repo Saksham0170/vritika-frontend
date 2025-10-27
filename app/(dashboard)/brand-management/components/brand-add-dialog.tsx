@@ -295,7 +295,6 @@ export function BrandAddDialog({ open, onClose, onSuccess }: BrandAddDialogProps
                                             }
                                         }}
                                         placeholder="Select product categories..."
-                                        searchPlaceholder="Search categories..."
                                         disabled={saving}
                                     />
                                 </div>
