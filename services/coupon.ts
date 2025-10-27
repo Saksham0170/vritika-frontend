@@ -2,8 +2,7 @@ import {
     Coupon,
     CreateCouponRequest,
     UpdateCouponRequest,
-    CouponListResponse,
-    SalesPersonListResponse
+    CouponListResponse
 } from "@/types/coupon"
 import { getAuthHeaders } from "@/lib/auth"
 
@@ -111,25 +110,7 @@ export async function deleteCoupon(id: string): Promise<void> {
     }
 }
 
-// Get salespeople for coupon assignment
-export async function getSalesPersons(): Promise<SalesPersonListResponse> {
-    try {
-        const response = await fetch(`${API_BASE_URL}/admin/coupon/salespeople`, {
-            method: 'GET',
-            headers: getAuthHeaders(),
-        })
 
-        if (!response.ok) {
-            throw new Error(`Failed to fetch salespeople: ${response.statusText}`)
-        }
-
-        const data = await response.json()
-        return data
-    } catch (error) {
-        console.error('Error fetching salespeople:', error)
-        throw error
-    }
-}
 
 // Assign salespeople to coupon
 export async function assignSalesPersonsToCoupon(

@@ -4,7 +4,7 @@ import * as React from "react"
 import { Check, ChevronsUpDown, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
+import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from "@/components/ui/command"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Badge } from "@/components/ui/badge"
 
@@ -18,7 +18,6 @@ interface MultiSelectProps {
     value: string[]
     onValueChange: (value: string[]) => void
     placeholder?: string
-    searchPlaceholder?: string
     disabled?: boolean
 }
 
@@ -27,15 +26,9 @@ export function MultiSelect({
     value,
     onValueChange,
     placeholder = "Select items...",
-    searchPlaceholder = "Search...",
     disabled = false,
 }: MultiSelectProps) {
     const [open, setOpen] = React.useState(false)
-    const [searchValue, setSearchValue] = React.useState("")
-
-    const filteredOptions = options.filter((option) =>
-        option.label.toLowerCase().includes(searchValue.toLowerCase())
-    )
 
     const selectedLabels = options
         .filter((option) => value.includes(option.value))
@@ -92,15 +85,10 @@ export function MultiSelect({
             </PopoverTrigger>
             <PopoverContent className="w-full p-0" align="start">
                 <Command>
-                    <CommandInput
-                        placeholder={searchPlaceholder}
-                        value={searchValue}
-                        onValueChange={setSearchValue}
-                    />
                     <CommandEmpty>No items found.</CommandEmpty>
                     <CommandList>
                         <CommandGroup>
-                            {filteredOptions.map((option) => (
+                            {options.map((option) => (
                                 <CommandItem
                                     key={option.value}
                                     value={option.value}

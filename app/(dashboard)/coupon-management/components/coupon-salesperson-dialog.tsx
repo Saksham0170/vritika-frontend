@@ -15,11 +15,12 @@ import { LoadingSpinner } from "@/components/ui/loading-components"
 import { Badge } from "@/components/ui/badge"
 import {
     getCouponById,
-    getSalesPersons,
     assignSalesPersonsToCoupon,
     removeSalesPersonsFromCoupon
 } from "@/services/coupon"
+import { getSalespersons } from "@/services/salesperson"
 import { Coupon, SalesPerson } from "@/types/coupon"
+import { Salesperson } from "@/types/salesperson"
 import { useToast } from "@/hooks/use-toast"
 
 interface CouponSalespersonDialogProps {
@@ -40,7 +41,7 @@ export function CouponSalespersonDialog({
     const [loading, setLoading] = useState(false)
     const [saving, setSaving] = useState(false)
     const [error, setError] = useState<string | null>(null)
-    const [salesPersons, setSalesPersons] = useState<SalesPerson[]>([])
+    const [salesPersons, setSalesPersons] = useState<Salesperson[]>([])
     const [salesPersonOptions, setSalesPersonOptions] = useState<MultiSelectOption[]>([])
     const [selectedSalesPersons, setSelectedSalesPersons] = useState<string[]>([])
 
@@ -53,22 +54,22 @@ export function CouponSalespersonDialog({
             // Load both coupon data and salespeople
             Promise.all([
                 getCouponById(couponId),
-                getSalesPersons()
+                getSalespersons()
             ])
                 .then(([couponData, salesPersonsResponse]) => {
                     setCoupon(couponData)
-                    const salesPersonsData = salesPersonsResponse.data?.data || []
+                    const salesPersonsData = salesPersonsResponse || []
                     setSalesPersons(salesPersonsData)
 
                     // Set up sales person options
-                    const options = salesPersonsData.map(person => ({
+                    const options = salesPersonsData.map((person: Salesperson) => ({
                         value: person._id,
                         label: `${person.name} (${person.email})`
                     }))
                     setSalesPersonOptions(options)
 
                     // Set currently assigned salespeople
-                    const assignedIds = couponData.assignedSalesPersons?.map(p => p._id) || []
+                    const assignedIds = couponData.assignedSalesPersons?.map((p: any) => p._id) || []
                     setSelectedSalesPersons(assignedIds)
                 })
                 .catch((err: unknown) => {

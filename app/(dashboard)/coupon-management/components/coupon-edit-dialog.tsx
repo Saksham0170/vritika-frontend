@@ -15,8 +15,10 @@ import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
 import { MultiSelect, type MultiSelectOption } from "@/components/ui/multiselect"
 import { LoadingSpinner } from "@/components/ui/loading-components"
-import { getCouponById, updateCoupon, getSalesPersons } from "@/services/coupon"
+import { getCouponById, updateCoupon } from "@/services/coupon"
+import { getSalespersons } from "@/services/salesperson"
 import { Coupon, UpdateCouponRequest, SalesPerson } from "@/types/coupon"
+import { Salesperson } from "@/types/salesperson"
 import { useToast } from "@/hooks/use-toast"
 
 interface CouponEditDialogProps {
@@ -32,7 +34,7 @@ export function CouponEditDialog({ couponId, open, onClose, onSuccess }: CouponE
     const [loading, setLoading] = useState(false)
     const [saving, setSaving] = useState(false)
     const [error, setError] = useState<string | null>(null)
-    const [salesPersons, setSalesPersons] = useState<SalesPerson[]>([])
+    const [salesPersons, setSalesPersons] = useState<Salesperson[]>([])
     const [salesPersonOptions, setSalesPersonOptions] = useState<MultiSelectOption[]>([])
 
     const [formData, setFormData] = useState({
@@ -84,15 +86,15 @@ export function CouponEditDialog({ couponId, open, onClose, onSuccess }: CouponE
             // Load both coupon data and salespeople
             Promise.all([
                 getCouponById(couponId),
-                getSalesPersons()
+                getSalespersons()
             ])
                 .then(([couponData, salesPersonsResponse]) => {
                     setCoupon(couponData)
-                    const salesPersonsData = salesPersonsResponse.data?.data || []
+                    const salesPersonsData = salesPersonsResponse || []
                     setSalesPersons(salesPersonsData)
 
                     // Set up sales person options
-                    const options = salesPersonsData.map(person => ({
+                    const options = salesPersonsData.map((person: Salesperson) => ({
                         value: person._id,
                         label: `${person.name} (${person.email})`
                     }))
@@ -104,7 +106,7 @@ export function CouponEditDialog({ couponId, open, onClose, onSuccess }: CouponE
                         discountValue: couponData.discountValue?.toString() || "",
                         maxDiscountAmount: couponData.maxDiscountAmount?.toString() || "",
                         minOrderAmount: couponData.minOrderAmount?.toString() || "",
-                        assignedSalesPersons: couponData.assignedSalesPersons?.map(p => p._id) || [],
+                        assignedSalesPersons: couponData.assignedSalesPersons?.map((p: any) => p._id) || [],
                         validFrom: couponData.validFrom ? new Date(couponData.validFrom).toISOString().split('T')[0] : "",
                         validUntil: couponData.validUntil ? new Date(couponData.validUntil).toISOString().split('T')[0] : "",
                         maxUsageCount: couponData.maxUsageCount?.toString() || "",

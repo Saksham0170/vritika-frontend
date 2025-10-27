@@ -67,7 +67,7 @@ export async function getRoleCommissions(type?: 'sub-admin' | 'sales-person'): P
 // Get single sub-admin commission by Sub-Admin ID
 export async function getRoleCommissionBySubAdminId(subAdminId: string): Promise<RoleCommission> {
     try {
-        const response = await fetch(`${API_BASE_URL}/admin/commission/${subAdminId}`, {
+        const response = await fetch(`${API_BASE_URL}/admin/commission/${subAdminId}?type=sub-admin`, {
             method: 'GET',
             headers: getAuthHeaders(),
         })
@@ -87,7 +87,7 @@ export async function getRoleCommissionBySubAdminId(subAdminId: string): Promise
 // Get single salesperson commission by Salesperson ID
 export async function getRoleCommissionBySalesPersonId(salesPersonId: string): Promise<RoleCommission> {
     try {
-        const response = await fetch(`${API_BASE_URL}/admin/commission/${salesPersonId}`, {
+        const response = await fetch(`${API_BASE_URL}/admin/commission/${salesPersonId}?type=sales-person`, {
             method: 'GET',
             headers: getAuthHeaders(),
         })
@@ -104,25 +104,6 @@ export async function getRoleCommissionBySalesPersonId(salesPersonId: string): P
     }
 }
 
-// Get single sub-admin commission by Sub-Admin ID
-export async function getRoleCommissionById(subAdminId: string): Promise<RoleCommission> {
-    try {
-        const response = await fetch(`${API_BASE_URL}/admin/commission/${subAdminId}`, {
-            method: 'GET',
-            headers: getAuthHeaders(),
-        })
-
-        if (!response.ok) {
-            throw new Error(`Failed to fetch sub-admin commission: ${response.statusText}`)
-        }
-
-        const data = await response.json()
-        return data.data
-    } catch (error) {
-        console.error('Error fetching sub-admin commission:', error)
-        throw error
-    }
-}
 
 // Create new sub-admin commission
 export async function createRoleCommission(roleCommissionData: CreateRoleCommissionRequest): Promise<RoleCommission> {

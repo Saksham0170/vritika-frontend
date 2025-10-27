@@ -69,13 +69,7 @@ export interface UpdateCouponRequest {
     message: string
 }
 
-export interface SalesPersonListResponse {
-    status: boolean
-    data: {
-        data: SalesPerson[]
-    }
-    message: string
-}
+
 
 export interface AssignRemoveSalesPersonRequest {
     salesPersonIds: string[]

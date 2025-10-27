@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { getRoleCommissionById, updateRoleCommissionById } from "@/services/role-commission"
+import { getRoleCommissionBySalesPersonId, updateRoleCommissionById } from "@/services/role-commission"
 import { RoleCommission, UpdateRoleCommissionRequest } from "@/types/role-commission"
 import { useToast } from "@/hooks/use-toast"
 
@@ -41,7 +41,7 @@ export function RoleCommissionEditDialog({
                 try {
                     setFetchLoading(true)
                     // Use salesperson ID for GET request
-                    const data = await getRoleCommissionById(initialRoleCommission.salesPersonId?._id || "")
+                    const data = await getRoleCommissionBySalesPersonId(initialRoleCommission.salesPersonId?._id || "")
                     setRoleCommission(data)
                     setFormData({
                         commissionPercentage: data.commissionPercentage,

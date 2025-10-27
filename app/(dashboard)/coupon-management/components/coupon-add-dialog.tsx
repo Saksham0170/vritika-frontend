@@ -20,8 +20,10 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { MultiSelect, type MultiSelectOption } from "@/components/ui/multiselect"
-import { createCoupon, getSalesPersons } from "@/services/coupon"
+import { createCoupon } from "@/services/coupon"
+import { getSalespersons } from "@/services/salesperson"
 import { CreateCouponRequest, SalesPerson } from "@/types/coupon"
+import { Salesperson } from "@/types/salesperson"
 import { useToast } from "@/hooks/use-toast"
 import { Checkbox } from "@/components/ui/checkbox"
 
@@ -34,7 +36,7 @@ interface CouponAddDialogProps {
 export function CouponAddDialog({ open, onClose, onSuccess }: CouponAddDialogProps) {
     const { toast } = useToast()
     const [saving, setSaving] = useState(false)
-    const [salesPersons, setSalesPersons] = useState<SalesPerson[]>([])
+    const [salesPersons, setSalesPersons] = useState<Salesperson[]>([])
     const [salesPersonOptions, setSalesPersonOptions] = useState<MultiSelectOption[]>([])
 
     const [formData, setFormData] = useState({
@@ -74,11 +76,11 @@ export function CouponAddDialog({ open, onClose, onSuccess }: CouponAddDialogPro
 
     const loadSalesPersons = async () => {
         try {
-            const response = await getSalesPersons()
-            const salesPersonsData = response.data?.data || []
+            const response = await getSalespersons()
+            const salesPersonsData = response || []
             setSalesPersons(salesPersonsData)
 
-            const options = salesPersonsData.map(person => ({
+            const options = salesPersonsData.map((person: Salesperson) => ({
                 value: person._id,
                 label: `${person.name} (${person.email})`
             }))
@@ -389,7 +391,6 @@ export function CouponAddDialog({ open, onClose, onSuccess }: CouponAddDialogPro
                                             }
                                         }}
                                         placeholder="Select salespeople..."
-                                        searchPlaceholder="Search salespeople..."
                                         disabled={saving}
                                     />
                                 </div>
