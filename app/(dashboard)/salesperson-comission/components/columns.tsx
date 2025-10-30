@@ -36,14 +36,6 @@ export const createRoleCommissionColumns = ({ onEdit, onDelete }: RoleCommission
         ),
     },
     {
-        id: "salesperson-phone",
-        header: "Phone Number",
-        accessorFn: (row) => row.salesPersonId?.phoneNumber || "N/A",
-        cell: ({ row }) => (
-            <div className="font-medium">{row.original.salesPersonId?.phoneNumber || "N/A"}</div>
-        ),
-    },
-    {
         accessorKey: "commissionPercentage",
         header: "Commission Percentage",
         cell: ({ row }) => (

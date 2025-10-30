@@ -96,18 +96,6 @@ export function RoleCommissionDetailDialog({
                                         {roleCommission.salesPersonId?.email || "N/A"}
                                     </div>
                                 </div>
-                                <div>
-                                    <Label className="mb-2">Phone Number</Label>
-                                    <div className="p-3 bg-muted/50 rounded-md border border-border/30 text-sm font-medium">
-                                        {roleCommission.salesPersonId?.phoneNumber || "N/A"}
-                                    </div>
-                                </div>
-                                <div>
-                                    <Label className="mb-2">Address</Label>
-                                    <div className="p-3 bg-muted/50 rounded-md border border-border/30 text-sm font-medium">
-                                        {roleCommission.salesPersonId?.address || "N/A"}
-                                    </div>
-                                </div>
                             </div>
                         </section>
 
