@@ -142,16 +142,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   if (!hasHydrated) {
     return (
       <Sidebar collapsible="offcanvas" {...props}>
-        <SidebarHeader>
+        <SidebarHeader className="border-b border-sidebar-border px-4 h-12 flex items-center">
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton className="data-[slot=sidebar-menu-button]:!p-1.5">
+              <SidebarMenuButton className="data-[slot=sidebar-menu-button]:!p-1">
                 <Image
                   src="/vritkaLogo.svg"
                   alt="Vritika Logo"
                   width={120}
-                  height={32}
-                  className="h-8 w-auto"
+                  height={28}
+                  className="h-7 w-auto"
                 />
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -166,22 +166,22 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   return (
     <Sidebar collapsible="offcanvas" className="bg-sidebar border-r border-sidebar-border shadow-sm" {...props}>
-      <SidebarHeader className="border-b border-sidebar-border p-4">
+      <SidebarHeader className="border-b border-sidebar-border px-4 h-12 flex items-center">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
               asChild
-              className="data-[slot=sidebar-menu-button]:!p-3 hover:bg-sidebar-accent transition-colors"
+              className="data-[slot=sidebar-menu-button]:!p-1 hover:bg-sidebar-accent transition-colors"
             >
-              <a href="#" className="flex items-center justify-center">
+              <div className="flex items-center justify-center">
                 <Image
                   src="/vritkaLogo.svg"
                   alt="Vritika Logo"
-                  width={140}
-                  height={36}
-                  className="h-9 w-auto"
+                  width={120}
+                  height={28}
+                  className="h-7 w-auto"
                 />
-              </a>
+              </div>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

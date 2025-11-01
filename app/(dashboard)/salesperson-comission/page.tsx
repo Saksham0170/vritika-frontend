@@ -129,8 +129,6 @@ export default function RoleCommissionPage() {
       <DataTable
         columns={roleCommissionColumns}
         data={roleCommissions}
-        title="Salesperson Commission Management"
-        description="Manage commission rates for different salesperson levels"
         searchKey="salesperson-name"
         searchPlaceholder="Search by salesperson name..."
         onAdd={handleAddRoleCommission}

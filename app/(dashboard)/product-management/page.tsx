@@ -34,7 +34,7 @@ const PRODUCT_TYPES: ProductType[] = [
 
 
 const getActiveButtonClass = () => {
-  return "bg-accent text-accent-foreground border-accent shadow-sm"
+  return "bg-accent text-sidebar-primary border-accent shadow-sm"
 }
 
 export default function ProductManagementPage() {
@@ -153,17 +153,10 @@ export default function ProductManagementPage() {
   })
 
   return (
-    <div className="max-w-screen-xl mx-auto p-6 space-y-6">
-      {/* Header Section */}
-      <div className="pb-4 border-b border-border/40">
-        <h1 className="text-2xl font-bold tracking-tight">Product Management</h1>
-        <p className="text-muted-foreground mt-2">
-          Manage different types of products efficiently by categorizing them below.
-        </p>
-      </div>
+    <div className="max-w-screen-xl mx-auto">
 
       {/* Product Type Navigation */}
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2 px-6 pt-6 pb-2">
         {PRODUCT_TYPES.map((type) => {
           const isActive = activeTab === type
           return (
@@ -171,7 +164,7 @@ export default function ProductManagementPage() {
               key={type}
               variant="ghost"
               onClick={() => handleTabChange(type)}
-              className={`flex items-center justify-center gap-2 h-auto p-3 rounded-lg transition-all duration-200 border ${isActive
+              className={`flex items-center justify-center gap-2 h-auto py-3 px-4 rounded-lg transition-all duration-200 ${isActive
                 ? getActiveButtonClass()
                 : 'hover:bg-accent/30 border-transparent'
                 }`}

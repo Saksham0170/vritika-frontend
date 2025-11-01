@@ -19,21 +19,23 @@ export default function Dashboard() {
       <div className="space-y-6">
         <ChartAreaInteractive />
 
-        <DataTable
-          data={data}
-          title="Recent Activity"
-          searchKey="header"
-          searchPlaceholder="Search activities..."
-          columns={[
-            { accessorKey: "id", header: "ID" },
-            { accessorKey: "header", header: "Header" },
-            { accessorKey: "type", header: "Type" },
-            { accessorKey: "status", header: "Status" },
-            { accessorKey: "target", header: "Target" },
-            { accessorKey: "limit", header: "Limit" },
-            { accessorKey: "reviewer", header: "Reviewer" },
-          ]}
-        />
+        <div className="space-y-4">
+          <h2 className="text-lg font-semibold">Recent Activity</h2>
+          <DataTable
+            data={data}
+            searchKey="header"
+            searchPlaceholder="Search activities..."
+            columns={[
+              { accessorKey: "id", header: "ID" },
+              { accessorKey: "header", header: "Header" },
+              { accessorKey: "type", header: "Type" },
+              { accessorKey: "status", header: "Status" },
+              { accessorKey: "target", header: "Target" },
+              { accessorKey: "limit", header: "Limit" },
+              { accessorKey: "reviewer", header: "Reviewer" },
+            ]}
+          />
+        </div>
       </div>
     </div>
   )

@@ -89,15 +89,7 @@ export default function OrderManagementPage() {
     }
 
     return (
-        <div className="max-w-screen-xl mx-auto p-6 space-y-6">
-            {/* Header Section */}
-            <div className="pb-4 border-b border-border/40">
-                <h1 className="text-2xl font-bold tracking-tight">Order Management</h1>
-                <p className="text-muted-foreground mt-2">
-                    Manage and view customer orders and their details. Click on any row to view detailed information.
-                </p>
-            </div>
-
+        <div>
             {/* Orders Table */}
             <div className="space-y-4">
                 <DataTable

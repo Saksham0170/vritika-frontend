@@ -127,8 +127,6 @@ export default function BrandManagementPage() {
       <DataTable
         columns={brandColumns}
         data={brands}
-        title="Brand Management"
-        description="Full control over your brands and their details"
         searchKey="brandName"
         searchPlaceholder="Search brands..."
         onAdd={handleAddBrand}

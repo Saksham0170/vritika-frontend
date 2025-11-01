@@ -85,8 +85,6 @@ function DataTableRow<TData>({ row, onRowClick }: { row: Row<TData>, onRowClick?
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
-  title?: string
-  description?: string
   searchKey?: string
   searchPlaceholder?: string
   onAdd?: () => void
@@ -105,8 +103,6 @@ interface DataTableProps<TData, TValue> {
 export function DataTable<TData, TValue>({
   columns,
   data: initialData,
-  title,
-  description,
   searchKey = "name",
   searchPlaceholder = "Search...",
   onAdd,
@@ -210,16 +206,6 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="max-w-screen-xl mx-auto p-6 space-y-6">
-      {/* Header with title */}
-      {title && (
-        <div className="pb-4 border-b border-border/40">
-          <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
-          {description && (
-            <p className="text-muted-foreground mt-2">{description}</p>
-          )}
-        </div>
-      )}
-
       {/* Search and actions bar */}
       <div className="flex items-center justify-between gap-3 mb-4">
         <div className="flex items-center gap-3">

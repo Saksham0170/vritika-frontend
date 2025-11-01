@@ -132,8 +132,6 @@ export default function AdminManagementPage() {
       <DataTable
         columns={adminColumns}
         data={admins}
-        title="Admin Management"
-        description="Manage and control all admin accounts efficiently"
         searchKey="name"
         searchPlaceholder="Search admins..."
         onAdd={handleAddAdmin}

@@ -110,8 +110,6 @@ export default function SalespersonManagementPage() {
       <DataTable
         columns={salespersonColumns}
         data={salespersons}
-        title="Salesperson Management"
-        description="Manage salesperson accounts, view details, and handle permissions"
         searchKey="name"
         searchPlaceholder="Search salespersons by name, phone, or email..."
         onAdd={handleAddSalesperson}

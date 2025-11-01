@@ -151,8 +151,6 @@ export default function CouponManagementPage() {
             <DataTable
                 columns={couponColumns}
                 data={coupons}
-                title="Coupon Management"
-                description="Full control over your coupons and their details"
                 searchKey="couponCode"
                 searchPlaceholder="Search coupons..."
                 onAdd={handleAddCoupon}

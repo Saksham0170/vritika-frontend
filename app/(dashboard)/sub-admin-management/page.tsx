@@ -132,8 +132,6 @@ export default function SubAdminManagementPage() {
             <DataTable
                 columns={subAdminColumns}
                 data={subAdmins}
-                title="Sub Admin Management"
-                description="Manage and control all sub admin accounts efficiently"
                 searchKey="name"
                 searchPlaceholder="Search sub admins..."
                 onAdd={handleAddSubAdmin}
