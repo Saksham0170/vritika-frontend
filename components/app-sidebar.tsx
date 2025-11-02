@@ -11,6 +11,7 @@ import {
   IconCoins,
   IconTicket,
   IconShoppingCart,
+  IconBook,
 } from "@tabler/icons-react"
 import { useUserStore } from "@/store/userStore"
 
@@ -86,6 +87,11 @@ const adminNavMain = [
     title: "Salesperson Commission",
     url: "/salesperson-comission",
     icon: IconCoins,
+  },
+  {
+    title: "Knowledge Center",
+    url: "/knowledge-center",
+    icon: IconBook,
   },
 ]
 

@@ -46,6 +46,9 @@ export const UPLOAD_ENDPOINTS = {
 
     // Product uploads
     PRODUCT_IMAGE: '/upload/product-image',
+
+    // Knowledge Center uploads
+    KNOWLEDGE_CENTER_PDF: '/upload/knowledge-center-pdf',
 } as const
 
 export type UploadEndpoint = typeof UPLOAD_ENDPOINTS[keyof typeof UPLOAD_ENDPOINTS]
