@@ -149,7 +149,8 @@ export default function ProductManagementPage() {
 
   const productColumns = createProductColumns({
     onEdit: handleEdit,
-    onDelete: handleDelete
+    onDelete: handleDelete,
+    activeType: activeTab
   })
 
   return (

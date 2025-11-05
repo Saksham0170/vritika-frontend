@@ -3,7 +3,7 @@
 import { ColumnDef } from "@tanstack/react-table"
 import { IconDotsVertical, IconEdit, IconTrash } from "@tabler/icons-react"
 
-import { Product } from "@/types/product"
+import { Product, ProductType } from "@/types/product"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -16,43 +16,56 @@ import {
 interface ProductColumnsProps {
     onEdit: (product: Product) => void
     onDelete: (product: Product) => void
+    activeType: ProductType
 }
 
-export const createProductColumns = ({ onEdit, onDelete }: ProductColumnsProps): ColumnDef<Product>[] => [
-    {
-        accessorKey: "productName",
-        header: "Product Name",
-        cell: ({ row }) => {
-            const productName = row.getValue("productName") as string
-            return (
-                <div className="font-medium">{productName}</div>
-            )
+export const createProductColumns = ({ onEdit, onDelete, activeType }: ProductColumnsProps): ColumnDef<Product>[] => {
+    // Types that don't need brand column
+    const typesWithoutBrand: ProductType[] = ["Structure", "BOS", "Service", "Kit", "Services/Freebies"]
+    const shouldShowBrand = !typesWithoutBrand.includes(activeType)
+
+    const columns: ColumnDef<Product>[] = [
+        {
+            accessorKey: "productName",
+            header: "Product Name",
+            cell: ({ row }) => {
+                const productName = row.getValue("productName") as string
+                return (
+                    <div className="font-medium">{productName}</div>
+                )
+            },
         },
-    },
-    {
-        accessorKey: "price",
-        header: "Price",
-        cell: ({ row }) => {
-            const price = row.getValue("price") as number
-            return (
-                <div className="font-medium">₹{price.toLocaleString()}</div>
-            )
+        {
+            accessorKey: "price",
+            header: "Price",
+            cell: ({ row }) => {
+                const price = row.getValue("price") as number
+                return (
+                    <div className="font-medium">₹{price.toLocaleString()}</div>
+                )
+            },
         },
-    },
-    {
-        accessorKey: "brandDetails",
-        header: "Brand",
-        cell: ({ row }) => {
-            const product = row.original
-            const brandName = product.brandDetails?.brandName
-            return (
-                <div className="font-medium">
-                    {brandName || <span className="text-muted-foreground">-</span>}
-                </div>
-            )
-        },
-    },
-    {
+    ]
+
+    // Conditionally add brand column
+    if (shouldShowBrand) {
+        columns.push({
+            accessorKey: "brandDetails",
+            header: "Brand",
+            cell: ({ row }) => {
+                const product = row.original
+                const brandName = product.brandDetails?.brandName
+                return (
+                    <div className="font-medium">
+                        {brandName || <span className="text-muted-foreground">-</span>}
+                    </div>
+                )
+            },
+        })
+    }
+
+    // Add actions column at the end
+    columns.push({
         id: "actions",
         enableHiding: false,
         cell: ({ row }) => {
@@ -84,5 +97,7 @@ export const createProductColumns = ({ onEdit, onDelete }: ProductColumnsProps):
                 </DropdownMenu>
             )
         },
-    },
-]
+    })
+
+    return columns
+}

@@ -594,7 +594,28 @@ export function ProductEditDialog({ productId, open, onClose, onSuccess }: Produ
 
             case "Cables":
                 return (
-                    <>
+                    <>        
+                        <div>
+                            <Label className="mb-2">
+                                SPV Brand <span className="text-red-500">*</span>
+                            </Label>
+                            <Select
+                                value={formData.spvBrand}
+                                onValueChange={(value) => handleInputChange("spvBrand", value)}
+                                disabled={loadingBrands}
+                            >
+                                <SelectTrigger className="w-full">
+                                    <SelectValue placeholder={loadingBrands ? "Loading brands..." : "Select SPV brand"} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {brands.map((brand) => (
+                                        <SelectItem key={brand._id} value={brand._id}>
+                                            {brand.brandName}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
                         <div>
                             <Label className="mb-2">
                                 SPV Type <span className="text-red-500">*</span>
